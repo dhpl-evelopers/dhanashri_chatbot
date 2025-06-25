@@ -1039,14 +1039,42 @@ section[data-testid="stFileUploader"] button > div {
     }
 
     @media (max-width: 768px) {
-        .user-message, .bot-message {
-            max-width: 90% !important;
-        }
-
-        .bot-message::before {
-            left: -30px !important;
-        }
+    .user-message, .bot-message {
+        max-width: 90% !important;
     }
+
+    .bot-message::before {
+        left: -30px !important;
+    }
+
+    .chat-container {
+        padding: 10px !important;
+    }
+
+    .custom-title {
+        font-size: 20px !important;
+        line-height: 1.2 !important;
+    }
+
+    [data-testid="stChatInput"] .stTextInput input {
+        font-size: 16px !important;
+        padding: 14px 20px !important;
+        min-height: 50px !important;
+    }
+
+    .file-upload-container {
+        bottom: 60px !important;
+        padding: 0 10px !important;
+    }
+
+    .footer-container {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 8px 0 !important;
+    }
+}
+
+
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
