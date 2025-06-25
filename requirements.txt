@@ -1,0 +1,14 @@
+flask
+bcrypt
+python-dotenv
+azure-storage-blob
+openai
+azure-search-documents
+gunicorn
+uvicorn
+
+Flask
+requests
+gunicorn
+authlib
+streamlit
