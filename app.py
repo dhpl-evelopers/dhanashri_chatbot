@@ -17,6 +17,8 @@ import base64
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import streamlit as st
+
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="RINGS & I - AI Ring Advisor", 
@@ -25,10 +27,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
-import streamlit as st
 
-
-# Apply CSS fix to all input components
+# ✅ Add back button and input styling
 st.markdown("""
     <style>
     .back-button {
@@ -44,8 +44,7 @@ st.markdown("""
         left: 20px;
         z-index: 99999;
     }
-    </style>
-    <a href="https://www.ringsandi.com" class="back-button">← Back to RINGS & I</a>
+
     /* Remove extra container border */
     div[data-baseweb="input"] {
         border: none !important;
@@ -63,10 +62,12 @@ st.markdown("""
 
     input:focus, textarea:focus {
         outline: none !important;
-        box-shadow: 0 0 0 2px #a3d2fc !important; /* optional glow */
+        box-shadow: 0 0 0 2px #a3d2fc !important;
         border: 1px solid #228be6 !important;
     }
     </style>
+
+    <a href="https://www.ringsandi.com" class="back-button">← Back to RINGS & I</a>
 """, unsafe_allow_html=True)
 
 # --- SESSION STATE INITIALIZATION ---
