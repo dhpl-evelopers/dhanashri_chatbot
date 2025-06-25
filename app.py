@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit as st
 import bcrypt
 import os
 import requests
@@ -14,11 +13,27 @@ import re
 import base64
 
 
+
+# Back to website button
+st.markdown("""
+    <a href="https://www.ringsandi.com" style="
+        display: inline-block;
+        background-color: #000;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 9999;
+    ">← Back to RINGS & I</a>
+""", unsafe_allow_html=True)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-import streamlit as st
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
@@ -28,24 +43,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
+import streamlit as st
 
-# ✅ Add back button and input styling
+# Apply CSS fix to all input components
 st.markdown("""
     <style>
-    .back-button {
-        display: inline-block;
-        background-color: #000;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        position: fixed;
-        top: 80px;
-        left: 20px;
-        z-index: 99999;
-    }
-
     /* Remove extra container border */
     div[data-baseweb="input"] {
         border: none !important;
@@ -63,12 +65,10 @@ st.markdown("""
 
     input:focus, textarea:focus {
         outline: none !important;
-        box-shadow: 0 0 0 2px #a3d2fc !important;
+        box-shadow: 0 0 0 2px #a3d2fc !important; /* optional glow */
         border: 1px solid #228be6 !important;
     }
     </style>
-
-    <a href="https://www.ringsandi.com" class="back-button">← Back to RINGS & I</a>
 """, unsafe_allow_html=True)
 
 # --- SESSION STATE INITIALIZATION ---
@@ -889,18 +889,10 @@ def show_chat_ui():
     # Footer
     st.markdown("""
     <div class="footer-container" style="
-    
-    position: fixed;
-    bottom: 18px;
-    left: 0;
-    right: 0;
-    background: white;
-    padding: 5px 0;
-    text-align: center;
-    z-index: 999;
-    width: 100%;
-    margin-left: 0;
-">
+        position: fixed; bottom: 18px; left: 0; right: 0;
+        background: white; padding: 5px 0; text-align: center;
+        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;
+    ">
         <div class="footer-content">
             Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
         </div>
@@ -923,12 +915,11 @@ def load_css():
         --prompt-hover: #E0E0E0;
         --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
-
-    input:focus, textarea:focus {
-        outline: none !important;
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-    }
+input:focus, textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+}
 
     [data-testid="stChatInput"] {
         width: 100% !important;
@@ -945,43 +936,44 @@ def load_css():
         box-shadow: var(--shadow) !important;
     }
 
-    [data-testid="stChatInput"] .stTextInput input:focus {
-        border-color: #ccc !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
+   [data-testid="stChatInput"] .stTextInput input:focus {
+    border-color: #ccc !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 
     /* Hide uploader label and text */
     section[data-testid="stFileUploader"] label,
-    section[data-testid="stFileUploader"] div span {
-        display: none !important;
-    }
+section[data-testid="stFileUploader"] div span {
+    display: none !important;
+}
 
-    section[data-testid="stFileUploader"] button {
-        width: 40px !important;
-        height: 40px !important;
-        border-radius: 50% !important;
-        border: 1px solid #ccc !important;
-        background-color: #fff !important;
-        padding: 0 !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        position: relative;
-    }
+section[data-testid="stFileUploader"] button {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    border: 1px solid #ccc !important;
+    background-color: #fff !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
 
     /* Paperclip Icon */
     section[data-testid="stFileUploader"] button::after {
-        content: "📎";
-        font-size: 20px;
-        color: #333;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
+    content: "📎";
+    font-size: 20px;
+    color: #333;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
 
-    section[data-testid="stFileUploader"] button > div {
-        display: none !important;
-    }
+section[data-testid="stFileUploader"] button > div {
+    display: none !important;
+}
 
     /* Chat bubbles */
     .user-message, .bot-message {
@@ -1046,7 +1038,6 @@ def load_css():
         padding: 0.5rem 1rem;
     }
 
-    /* 📱 Mobile Responsiveness */
     @media (max-width: 768px) {
         .user-message, .bot-message {
             max-width: 90% !important;
@@ -1054,29 +1045,6 @@ def load_css():
 
         .bot-message::before {
             left: -30px !important;
-        }
-
-        .chat-container,
-        .file-upload-container {
-            max-width: 100% !important;
-            padding: 10px !important;
-        }
-
-        .custom-title {
-            font-size: 18px !important;
-            line-height: 1.2 !important;
-        }
-
-        [data-testid="stChatInput"] .stTextInput input {
-            font-size: 16px !important;
-            padding: 14px 20px !important;
-            min-height: 50px !important;
-        }
-
-        .footer-container {
-            width: 100% !important;
-            margin-left: 0 !important;
-            padding: 8px 0 !important;
         }
     }
 
@@ -1086,7 +1054,6 @@ def load_css():
     }
     </style>
     """, unsafe_allow_html=True)
-
 
 
 # --- OAUTH CALLBACK HANDLER ---
