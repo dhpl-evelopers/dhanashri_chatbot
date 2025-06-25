@@ -13,23 +13,6 @@ import re
 import base64
 
 
-# Back to website button
-st.markdown("""
-    <a href="https://www.ringsandi.com" style="
-        display: inline-block;
-        background-color: #000;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 9999;
-    ">← Back to RINGS & I</a>
-""", unsafe_allow_html=True)
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -44,9 +27,25 @@ st.set_page_config(
 )
 import streamlit as st
 
+
 # Apply CSS fix to all input components
 st.markdown("""
     <style>
+    .back-button {
+        display: inline-block;
+        background-color: #000;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        position: fixed;
+        top: 80px;
+        left: 20px;
+        z-index: 99999;
+    }
+    </style>
+    <a href="https://www.ringsandi.com" class="back-button">← Back to RINGS & I</a>
     /* Remove extra container border */
     div[data-baseweb="input"] {
         border: none !important;
