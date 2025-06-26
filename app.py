@@ -12,25 +12,6 @@ import logging
 import re
 import base64
 
-
-
-# Back to website button
-st.markdown("""
-    <a href="https://www.ringsandi.com" style="
-        display: inline-block;
-        background-color: #000;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        z-index: 9999;
-    ">← Back to RINGS & I</a>
-""", unsafe_allow_html=True)
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -674,39 +655,72 @@ def show_chat_ui():
         show_auth_ui()
         return
 
-    # Sidebar content (unchanged)
+    # Sidebar content
     with st.sidebar:
+        # Logo + Styles
         st.markdown("""
         <style>
-            .logo-container { text-align: center; margin-top: -50px; margin-bottom: 5px; }
-            .logo-img { max-width: 280px !important; height: auto; margin: 0 auto; }
-            section[data-testid="stSidebar"] > div { padding-top: 0.2rem !important; }
-            .prompts-container { margin: 60px 0 !important; }
+            .explore-button {
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+
+            section[data-testid="stSidebar"] > div {
+                padding-top: 0.2rem !important;
+            }
+
+
+            .prompts-container {
+                margin: 60px 0 !important;
+            }
+
             .prompt-title {
-                font-size: 18px; font-weight: 700; color: #333; margin: 8px 0 10px 0;
-                letter-spacing: 0.5px; text-transform: uppercase;
-                border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;
+                font-size: 18px;
+                font-weight: 700;
+                color: #333;
+                margin: 8px 0 10px 0;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                border-bottom: 1px solid #e0e0e0;
+                padding-bottom: 8px;
             }
+
             .prompt-btn {
-                width: 100%; text-align: left; padding: 10px 15px !important;
-                margin: 6px 0 !important; border-radius: 8px !important;
-                font-weight: 600 !important; font-size: 13px !important;
-                transition: all 0.2s ease !important; border: 1px solid #e0e0e0 !important;
+                width: 100%;
+                text-align: left;
+                padding: 10px 15px !important;
+                margin: 6px 0 !important;
+                border-radius: 8px !important;
+                font-weight: 600 !important;
+                font-size: 13px !important;
+                transition: all 0.2s ease !important;
+                border: 1px solid #e0e0e0 !important;
             }
+
             .prompt-btn:hover {
                 background-color: #f5f5f5 !important;
                 transform: translateX(3px) !important;
                 box-shadow: 2px 2px 8px rgba(0,0,0,0.1) !important;
             }
+
             .user-message::before {
-                content: "👤"; position: absolute; right: -40px; top: 10px;
-                font-size: 1.5rem; z-index: 1;
+                content: "👤";
+                position: absolute;
+                right: -40px;
+                top: 10px;
+                font-size: 1.5rem;
+                z-index: 1;
             }
+
             .bot-message::before {
-                content: "💎"; position: absolute; left: -40px; top: 10px;
-                font-size: 1.5rem; z-index: 1;
+                content: "💎";
+                position: absolute;
+                left: -40px;
+                top: 10px;
+                font-size: 1.5rem;
+                z-index: 1;
             }
-            /* New empty state styles */
+
             .empty-state-container {
                 text-align: center;
                 margin: 100px auto;
@@ -716,44 +730,133 @@ def show_chat_ui():
                 background: white;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             }
+
             .empty-state-title {
                 font-size: 24px;
                 font-weight: 600;
                 color: #555;
                 margin-top: 20px;
             }
+
             .welcome-title {
                 font-size: 32px;
                 font-weight: 800;
                 color: #000;
                 margin-bottom: 10px;
             }
+
+            .logo-container {
+                text-align: center;
+                padding: 0 !important;
+                margin: 0 !important;
+                position: relative;
+                top: 0 !important;
+            }
+
+            .logo-img {
+                width: 80px !important;
+                height: auto !important;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            @media (max-width: 520px) {
+                .prompt-btn {
+                    padding: 6px 10px !important;
+                    font-size: 13px !important;
+                    margin: 4px 0 !important;
+                }
+
+                .logo-container {
+                    padding: 4px 0 !important;
+                }
+
+                .logo-img {
+                    width: 60px !important;
+                }
+
+                .stButton {
+                    margin-bottom: 4px !important;
+                }
+
+                div[data-testid="stVerticalBlock"] {
+                    gap: 4px !important;
+                }
+
+                section[data-testid="stSidebar"] > div {
+                    overflow: hidden !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: space-between !important;
+                    height: 100% !important;
+                }
+
+                section[data-testid="stSidebar"] {
+                    overflow: hidden !important;
+                }
+            }
         </style>
+
         <div class="logo-container">
-            <img src="https://cdn.shopify.com/s/files/1/0843/6917/8903/files/full_logo_black.png?v=1709732030" 
+            <img src="https://cdn.shopify.com/s/files/1/0843/6917/8903/files/logo_in_black.png?v=1750913006"
                  class="logo-img">
-        </div>
-        <div class="prompts-container">
-            <div class="prompt-title">💎 Quick Prompts</div>
         </div>
         """, unsafe_allow_html=True)
 
-        for emoji, text in [
-            ("💍", "What is Ringsandi?"),
-            ("📍", "Studio Location?"),
-            ("✨", "What makes RINGS & I different?"),
-            ("💰", "14K vs 18K gold - main differences"),
-            ("💎", "Platinum vs gold purity comparison")
-        ]:
-            if st.button(f"{emoji} {text}", key=f"prompt_{text[:10].lower().replace(' ','_')}",
-                         help=f"Ask about {text}", use_container_width=True):
-                handle_user_prompt(text)
-                
-        st.markdown("---")
-        
+
+        # Explore Button
+        # Show explore button ONLY when not logged in
+        if not st.session_state.logged_in:
+           if st.button("🔍 Explore the details of your ring", key="explore_btn", use_container_width=True):
+            st.session_state.show_auth = True
+            st.rerun()
+            st.markdown('<div class="explore-button"></div>', unsafe_allow_html=True)
+
+
+        # PROMPTS based on login state
+        if st.session_state.logged_in:
+         st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;">
+        <strong>🧠 AI RingExpert is ready to help you!</strong>
+    </div>""", unsafe_allow_html=True)
+
+    # 🆕 Instruction line
+         st.markdown("""
+        <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
+            Let’s help you to determine the following details
+        </div>
+        <hr style="margin-bottom: 20px;">
+    """, unsafe_allow_html=True)
+
+    # After login prompts
+         for emoji, label in [
+        ("💎", "Size of Diamonds"),
+        ("🔢", "Number of Diamonds on the Ring"),
+        ("⚖️", "Quantity of Gold"),
+        ("🟡", "Gold Karat")
+    ]:
+
+                if st.button(f"{emoji} {label}", key=f"user_{label[:10].lower().replace(' ','_')}", use_container_width=True):
+                    handle_user_prompt(label)
+    
+        else:
+            # Before login prompts
+            for emoji, text in [
+                ("💍", "What is Ringsandi?"),
+                ("📍", "Studio Location?"),
+                ("✨", "What makes RINGS & I different?"),
+                ("💰", "14K vs 18K gold - main differences"),
+                ("💎", "Platinum vs gold purity comparison")
+            ]:
+                if st.button(f"{emoji} {text}", key=f"prompt_{text[:10].lower().replace(' ','_')}",
+                             help=f"Ask about {text}", use_container_width=True):
+                    handle_user_prompt(text)
+
+
+        # USER STATUS block
         if st.session_state.logged_in:
             st.markdown(f"""
-                <div style="text-align: center; margin: 1rem 0 0.5rem; padding: 8px 0; 
+                <div style="text-align: center;margin: 1rem 0 0.5rem; padding: 8px 0; 
                 background: #e8f5e9; border-radius: 8px;">
                     <div style="font-weight: 600; color: #2e7d32;">
                         {st.session_state.full_name or st.session_state.username}
@@ -765,15 +868,16 @@ def show_chat_ui():
                 logout()
         else:
             st.markdown("""
-                <div style="text-align: center; margin: 1rem 0 0.5rem; padding: 8px 0; 
-                background: #f5f5f5; border-radius: 8px;">
-                    <div style="font-weight: 600; color: #333;">Guest User</div>
-                    <div style="font-size: 12px; color: #777;">History not saved</div>
+                <div style="text-align: center; margin: 0.1rem 0 0.1rem; padding: 4px 0;
+                     background: #f5f5f5; border-radius: 8px;">
+               <div style="font-weight: 600; color: #333;">Guest User</div>
+                 <div style="font-size: 12px; color: #777;">History not saved</div>
                 </div>
             """, unsafe_allow_html=True)
-            if st.button("Login / Sign Up", key="sidebar_login_btn", type="primary", use_container_width=True):
+            if st.button("Login / Sign Up", key="sidebar_login_btn_sidebar", type="primary", use_container_width=True):
                 st.session_state.show_auth = True
                 st.rerun()
+
 
     # Main chat UI
     st.markdown("""
