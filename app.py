@@ -24,7 +24,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
-import streamlit as st
+# Set mobile viewport for responsive scaling
+st.markdown("""
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+""", unsafe_allow_html=True)
+
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -879,129 +883,69 @@ def show_chat_ui():
                 st.session_state.show_auth = True
                 st.rerun()
 
+# --- Main Chat Area Markup ---
+st.markdown(""" 
+<style>
+    /* your existing style here */
+</style>
+<div class="title-container">
+    <div class="custom-title">AI.RingExpert</div>
+</div>
+<div class="chat-container">
+""", unsafe_allow_html=True)
 
-    # Main chat UI
+# Display chat or empty state
+if not st.session_state.get("messages"):
     st.markdown("""
-    <style>
-        .title-container {
-            position: fixed; top: 90px; right: 80px; z-index: 1002;
-            background: white; padding: 4px 12px; border-radius: 16px;
-        }
-        .custom-title {
-            font-size: 28px !important; font-weight: 800 !important;
-            margin: 0 !important; color: #222; letter-spacing: 0.5px;
-        }
-        .chat-container { max-width: 800px; margin: 0 auto; padding: 20px 0; }
-        .user-message, .bot-message {
-            position: relative; padding: 12px 16px; margin-bottom: 12px;
-            max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .user-message {
-            background: #f8f9fa; border-radius: 18px 18px 4px 18px;
-            margin-left: auto; border: 1px solid rgba(0,0,0,0.1);
-        }
-        .bot-message {
-            background: white; border-radius: 18px 18px 18px 4px;
-            margin-right: auto; border: 1px solid rgba(0,0,0,0.1);
-        }
-        .file-upload-container {
-            position: fixed; 
-            bottom: 80px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            width: 100%; 
-            max-width: 800px; 
-            padding: 0 20px; 
-            z-index: 100;
-            display: flex;
-            gap: 10px;
-        }
-        .uploaded-file {
-            display: flex; align-items: center; padding: 8px 12px;
-            background: #f5f5f5; border-radius: 8px; margin-bottom: 8px;
-        }
-        .uploaded-file-name { margin-left: 8px; font-size: 14px; }
-        .remove-file { margin-left: auto; cursor: pointer; color: #999; }
-        
-        /* Custom file uploader button */
-        .stFileUploader > label { display: none !important; }
-        .stFileUploader > button {
-            min-width: 40px !important;
-            width: 40px !important;
-            height: 40px !important;
-            padding: 0 !important;
-            border-radius: 50% !important;
-            background: white !important;
-            border: 1px solid #ddd !important;
-        }
-        .stFileUploader > button:hover {
-            background: #f5f5f5 !important;
-        }
-        .stFileUploader > button > div > p {
-            margin: 0 !important;
-            font-size: 18px !important;
-        }
-        
-        @media (max-width: 768px) {
-            .title-container {
-                right: 5px !important; top: 5px !important;
-                padding: 4px 12px !important;
-            }
-            .custom-title { font-size: 20px !important; }
-        }
-    </style>
-    <div class="title-container">
-        <div class="custom-title">AI.RingExpert</div>
+    <div class="empty-state-container">
+        <div class="empty-state-title">What can I help with?</div>
     </div>
-    <div class="chat-container">
     """, unsafe_allow_html=True)
+else:
+    for msg in st.session_state.get("messages", []):
+        role_class = "user-message" if msg["role"] == "user" else "bot-message"
+        st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-    # Show empty state if no messages, otherwise show messages
-    if not st.session_state.get("messages"):
-        st.markdown("""
-        <div class="empty-state-container">
-            <div class="empty-state-title">What can I help with?</div>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        for msg in st.session_state.get("messages", []):
-            role_class = "user-message" if msg["role"] == "user" else "bot-message"
-            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+# Close chat container
+st.markdown('</div>', unsafe_allow_html=True)
 
-    # File upload and chat input
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
-    
-    # Chat input
-    prompt = st.chat_input("Ask...", key="chat_input")
-    
-    # File uploader with custom styling
+# --- File Upload + Chat Input ---
+st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+
+# Always show chat input
+prompt = st.chat_input("Ask...", key="chat_input")
+
+# File upload only after login
+uploaded_file = None
+if st.session_state.logged_in:
     uploaded_file = st.file_uploader(
-        "📎",  # This remains to provide the correct icon
+        "📎",
         key="file_upload",
         label_visibility="collapsed",
         accept_multiple_files=False,
         help="Upload an image or PDF"
     )
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt:
-        handle_user_prompt(prompt, uploaded_file)
+# Close file-upload-container regardless of login
+st.markdown('</div>', unsafe_allow_html=True)
 
-    # Footer
-    st.markdown("""
-    <div class="footer-container" style="
-        position: fixed; bottom: 18px; left: 0; right: 0;
-        background: white; padding: 5px 0; text-align: center;
-        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;
-    ">
-        <div class="footer-content">
-            Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
-        </div>
+# Handle prompt if submitted
+if prompt:
+    handle_user_prompt(prompt, uploaded_file)
+
+# --- Footer ---
+st.markdown("""
+<div class="footer-container" style="
+    position: fixed; bottom: 18px; left: 0; right: 0;
+    background: white; padding: 5px 0; text-align: center;
+    z-index: 999; 
+">
+    <div class="footer-content">
+        Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
     </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
+
 
 # --- CSS STYLING ---
 def load_css():
@@ -1291,34 +1235,35 @@ def load_responsive_css():
     }
 
     .logo-img {
-        max-width: 55px !important;
-        height: auto !important;
-        margin: 0 auto 6px auto !important;
-        display: block;
-    }
+    max-width: 55px !important;
+    height: auto !important;
+    margin: 0 auto 6px auto !important;
+    display: block;
+}
 
-    /* ------------------------------
-       Footer Responsiveness
-    ------------------------------ */
+/* ------------------------------
+   Footer Responsiveness
+------------------------------ */
     .footer-container {
-        position: fixed;
-        bottom: 10px;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 10px 10px;
-        text-align: center;
-        z-index: 999;
-        width: 100% !important;
-        font-size: 0.85rem;
-    }
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 10px 10px;
+    text-align: center;
+    z-index: 999;
+    width: 100% !important;
+    font-size: 0.85rem;
+   }
 
     @media (max-width: 768px) {
-        .footer-container {
-            font-size: 0.75rem;
-            padding: 8px 8px !important;
-        }
+    .footer-container {
+        font-size: 0.75rem;
+        padding: 8px 8px !important;
     }
+}
+
 
     /* ------------------------------
        File Upload Icon
