@@ -1008,25 +1008,25 @@ input:focus, textarea:focus {
     border: 1px solid #ccc !important;
 }
 
-   [data-testid="stChatInput"] {
-    width: 100% !important;
-    max-width: 800px !important;
-    margin: 0 auto 30px !important;
-}
+    [data-testid="stChatInput"] {
+        width: 100% !important;
+        max-width: 800px !important;
+        margin: 0 auto 30px !important;
+    }
 
-[data-testid="stChatInput"] .stTextInput input {
-    border: 1px solid #ccc !important;
-    border-radius: 30px !important;
-    padding: 18px 24px !important;
-    font-size: 16px !important;
-    background-color: #f8f9fa !important;
+    [data-testid="stChatInput"] .stTextInput input {
+        border-radius: 32px !important;
+        padding: 22px 30px !important;
+        font-size: 20px !important;
+        min-height: 70px !important;
+        border: 1px solid #ccc !important;
+        box-shadow: var(--shadow) !important;
+    }
+
+   [data-testid="stChatInput"] .stTextInput input:focus {
+    border-color: #ccc !important;
     box-shadow: none !important;
-}
-
-[data-testid="stChatInput"] .stTextInput input:focus {
     outline: none !important;
-    box-shadow: none !important;
-    border: 1px solid #888 !important;
 }
 
 
