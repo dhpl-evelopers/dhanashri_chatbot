@@ -284,38 +284,27 @@ def process_uploaded_file(uploaded_file):
         logger.error(f"Error processing file: {str(e)}")
         return None
 
-def handle_user_prompt(prompt, uploaded_file=None):
-    """Handle user prompt and AI response"""
+def handle_user_prompt(prompt, uploaded_files=None):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Add file info to message if uploaded
-    if uploaded_file:
-        file_icon = "📄" if "pdf" in uploaded_file.type else "🖼️"
-        st.session_state.messages[-1]["file"] = {
-            "name": uploaded_file.name,
-            "type": uploaded_file.type,
-            "icon": file_icon
-        }
-    
+
+    # Collect file data
+    file_infos = []
+    if uploaded_files:
+        for file in uploaded_files:
+            file_data = process_uploaded_file(file)
+            if file_data:
+                file_infos.append({
+                    "file_name": file.name,
+                    "file_type": file.type,
+                    "data": file_data
+                })
+
     st.session_state.show_quick_prompts = False
-    
+
     with st.spinner(''):
         try:
-            # Process file if uploaded
-            file_data = None
-            if uploaded_file:
-                file_data = process_uploaded_file(uploaded_file)
-            
-            # Prepare payload for API
-            payload = {
-                "question": prompt,
-                "file_data": file_data,
-                "file_name": uploaded_file.name if uploaded_file else None,
-                "file_type": uploaded_file.type if uploaded_file else None
-            }
-            
-            # Determine which API endpoint to use
             if "generate" in prompt.lower() and "ring" in prompt.lower():
+                # Image generation API
                 response = requests.post(
                     Config.IMAGE_API_URL,
                     json={"prompt": prompt},
@@ -323,30 +312,31 @@ def handle_user_prompt(prompt, uploaded_file=None):
                 )
                 response.raise_for_status()
                 image_url = response.json().get("image_url", "")
-                
-                if image_url and image_url.startswith("http"):
-                    answer = f"Here's your AI-generated ring:\n\n![Generated Ring]({image_url})"
-                else:
-                    answer = "Sorry, the image could not be generated."
+                answer = f"Here's your AI-generated ring:\n\n![Generated Ring]({image_url})" if image_url else "Sorry, the image could not be generated."
             else:
+                # Regular Q&A API
+                payload = {
+                    "question": prompt,
+                    "files": file_infos
+                }
                 response = requests.post(
                     Config.CHAT_API_URL,
                     json=payload,
                     timeout=15
                 )
                 answer = response.json().get("answer", "I couldn't process that request.")
-                
+
         except Exception as e:
             logger.error(f"Error: {str(e)}")
             answer = "Sorry, I'm having trouble connecting to the service."
-    
+
     st.session_state.messages.append({"role": "assistant", "content": answer})
-    
+
     if st.session_state.logged_in:
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
-    
-    st.session_state.uploaded_file = None
+
     st.rerun()
+
 
 def complete_login(user_data):
     """Complete login process and set session state"""
@@ -975,21 +965,29 @@ def show_chat_ui():
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
     
     # Chat input
+    # File upload and chat input
+    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+
     prompt = st.chat_input("Ask...", key="chat_input")
-    
-    # File uploader with custom styling
-    uploaded_file = st.file_uploader(
-        "📎",  # This remains to provide the correct icon
+
+    uploaded_files = st.file_uploader(
+        "📎",
         key="file_upload",
         label_visibility="collapsed",
-        accept_multiple_files=False,
-        help="Upload an image or PDF"
+        accept_multiple_files=True,
+        help="Upload up to 3 files"
     )
+
+    if prompt:
+        handle_user_prompt(prompt, uploaded_files)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if prompt:
-        handle_user_prompt(prompt, uploaded_file)
+
 
     # Footer
     st.markdown("""
