@@ -1182,12 +1182,185 @@ def handle_oauth_callback():
                 if user:
                     complete_login(user)
                     st.query_params.clear()
+def load_responsive_css():
+    import streamlit as st
+    st.markdown("""
+    <style>
+    /* ------------------------------
+       Root Font Scaling for Mobile
+    ------------------------------ */
+    :root {
+        font-size: 16px;
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        :root {
+            font-size: 13px;
+        }
+    }
+
+    /* ------------------------------
+       Chat Input
+    ------------------------------ */
+    [data-testid="stChatInput"] .stTextInput input {
+        border-radius: 32px !important;
+        padding: 20px 30px !important;
+        font-size: 1rem !important;
+        min-height: 60px !important;
+        border: 1px solid #ccc !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    @media (max-width: 480px) {
+        [data-testid="stChatInput"] .stTextInput input {
+            font-size: 0.875rem !important;
+            padding: 16px 20px !important;
+        }
+    }
+
+    /* ------------------------------
+       Chat Bubbles
+    ------------------------------ */
+    .user-message, .bot-message {
+        padding: 12px 16px !important;
+        font-size: 1rem;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        margin-bottom: 12px !important;
+    }
+
+    .user-message {
+        background-color: #f8f9fa !important;
+        border-radius: 18px 18px 4px 18px !important;
+        margin-left: auto !important;
+    }
+
+    .bot-message {
+        background-color: white !important;
+        border-radius: 18px 18px 18px 4px !important;
+        margin-right: auto !important;
+        position: relative;
+    }
+
+    @media (max-width: 768px) {
+        .user-message, .bot-message {
+            max-width: 95% !important;
+            font-size: 0.875rem;
+        }
+
+        .bot-message::before {
+            left: -28px !important;
+        }
+    }
+
+    /* ------------------------------
+       Sidebar (Mobile Friendly)
+    ------------------------------ */
+    section[data-testid="stSidebar"] {
+        overflow-y: auto !important;
+        max-height: 100vh !important;
+        background: #f9f9f9 !important;
+    }
+
+    .prompt-btn {
+        padding: 10px 15px !important;
+        font-size: 0.9rem !important;
+    }
+
+    @media (max-width: 520px) {
+        .prompt-btn {
+            padding: 8px 12px !important;
+            font-size: 0.75rem !important;
+            margin: 4px 0 !important;
+        }
+
+        .logo-container {
+            padding: 4px 0 !important;
+        }
+
+        .logo-img {
+            width: 60px !important;
+        }
+    }
+
+    /* ------------------------------
+       Footer Responsiveness
+    ------------------------------ */
+    .footer-container {
+        position: fixed;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 10px 10px;
+        text-align: center;
+        z-index: 999;
+        width: 100% !important;
+        font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+        .footer-container {
+            font-size: 0.75rem;
+            padding: 8px 8px !important;
+        }
+    }
+
+    /* ------------------------------
+       Logo Image
+    ------------------------------ */
+    .logo-img {
+        max-width: 100px !important;
+        height: auto !important;
+        display: block;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 480px) {
+        .logo-img {
+            max-width: 70px !important;
+        }
+    }
+
+    /* ------------------------------
+       File Upload Icon
+    ------------------------------ */
+    section[data-testid="stFileUploader"] button {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 50% !important;
+        border: 1px solid #ccc !important;
+        background-color: #fff !important;
+        padding: 0 !important;
+        position: relative;
+    }
+
+    section[data-testid="stFileUploader"] button::after {
+        content: "📎";
+        font-size: 20px;
+        color: #333;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
 
 # --- MAIN APP FLOW ---
 def main():
-    load_css()
+    load_css()  # Keep if you still need it
+    load_responsive_css()  # 👈 Add this line
     handle_oauth_callback()
     show_chat_ui()
+
 
 if __name__ == "__main__":
     main()
