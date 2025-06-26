@@ -947,31 +947,28 @@ def show_chat_ui():
     """, unsafe_allow_html=True)
 
     # Show empty state if no messages, otherwise show messages
-    if not st.session_state.get("messages"):
-        st.markdown("""
+    # Show empty state if no messages, otherwise show messages
+if not st.session_state.get("messages"):
+    st.markdown("""
         <div style="text-align: center; font-size: 24px; font-weight: 600; color: #555; margin-top: 100px;">
            What can I help with?
         </div>
- """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+else:
+    for msg in st.session_state.get("messages", []):
+        role_class = "user-message" if msg["role"] == "user" else "bot-message"
+        st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-    else:
-        for msg in st.session_state.get("messages", []):
-            role_class = "user-message" if msg["role"] == "user" else "bot-message"
-            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+# End chat container
+st.markdown('</div>', unsafe_allow_html=True)
 
-    # File upload and chat input
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
-    
-    # Chat input
-    # File upload and chat input
-    # File upload and chat input container
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+# File upload and chat input container
+st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
 
-    uploaded_files = None
-    if st.session_state.logged_in:
-        uploaded_files = st.file_uploader(
+# Only show uploader if user is logged in
+uploaded_files = None
+if st.session_state.logged_in:
+    uploaded_files = st.file_uploader(
         "📎",
         key="file_upload",
         label_visibility="collapsed",
@@ -979,20 +976,18 @@ def show_chat_ui():
         help="Upload up to 3 files"
     )
 
-# ✅ Chat input should be always visible
-        prompt = st.chat_input("Ask...", key="chat_input")
+# Chat input visible for all users
+prompt = st.chat_input("Ask...", key="chat_input")
 
-    if prompt:
-      handle_user_prompt(prompt, uploaded_files)
+# Process the prompt
+if prompt:
+    handle_user_prompt(prompt, uploaded_files)
 
-# Close file-upload-container div
-    st.markdown('</div>', unsafe_allow_html=True)
+# Close file upload container
+st.markdown('</div>', unsafe_allow_html=True)
 
-
-
-
-    # Footer
-    st.markdown("""
+# Footer
+st.markdown("""
     <div class="footer-container" style="
         position: fixed; bottom: 18px; left: 0; right: 0;
         background: white; padding: 5px 0; text-align: center;
@@ -1002,7 +997,8 @@ def show_chat_ui():
             Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+
 
 # --- CSS STYLING ---
 def load_css():
