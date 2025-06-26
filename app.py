@@ -959,7 +959,6 @@ def show_chat_ui():
     if not st.session_state.get("messages"):
         st.markdown("""
         <div class="empty-state-container">
-            <div class="welcome-title">WELCOME TO RINGS & I 💍</div>
             <div class="empty-state-title">What can I help with?</div>
         </div>
         """, unsafe_allow_html=True)
