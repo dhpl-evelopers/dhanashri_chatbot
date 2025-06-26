@@ -966,11 +966,12 @@ def show_chat_ui():
     
     # Chat input
     # File upload and chat input
+    # File upload and chat input container
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
 
-    prompt = st.chat_input("Ask...", key="chat_input")
-
-    uploaded_files = st.file_uploader(
+    uploaded_files = None
+    if st.session_state.logged_in:
+        uploaded_files = st.file_uploader(
         "📎",
         key="file_upload",
         label_visibility="collapsed",
@@ -978,14 +979,15 @@ def show_chat_ui():
         help="Upload up to 3 files"
     )
 
+# ✅ Chat input should be always visible
+        prompt = st.chat_input("Ask...", key="chat_input")
+
     if prompt:
-        handle_user_prompt(prompt, uploaded_files)
+      handle_user_prompt(prompt, uploaded_files)
 
+# Close file-upload-container div
     st.markdown('</div>', unsafe_allow_html=True)
 
-
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 
