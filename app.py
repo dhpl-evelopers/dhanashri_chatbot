@@ -886,13 +886,42 @@ def show_chat_ui():
 # --- Main Chat Area Markup ---
 st.markdown(""" 
 <style>
-    /* your existing style here */
+.title-container {
+    position: fixed;
+    top: 90px;
+    right: 80px;
+    z-index: 1002;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.custom-title {
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    color: #222;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+    .title-container {
+        right: 5px !important;
+        top: 5px !important;
+        padding: 4px 12px !important;
+    }
+    .custom-title {
+        font-size: 20px !important;
+    }
+}
 </style>
+
 <div class="title-container">
     <div class="custom-title">AI.RingExpert</div>
 </div>
 <div class="chat-container">
 """, unsafe_allow_html=True)
+
 
 # Display chat or empty state
 if not st.session_state.get("messages"):
