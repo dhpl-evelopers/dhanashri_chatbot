@@ -1260,33 +1260,41 @@ def load_responsive_css():
     }
 
     /* ------------------------------
-       Sidebar (Mobile Friendly)
+       Sidebar - Non-Scrollable Fit
     ------------------------------ */
     section[data-testid="stSidebar"] {
-        overflow-y: auto !important;
-        max-height: 100vh !important;
-        background: #f9f9f9 !important;
+        height: auto !important;
+        overflow: hidden !important;
+    }
+
+    section[data-testid="stSidebar"] > div {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        gap: 6px !important;
+        padding: 10px !important;
     }
 
     .prompt-btn {
-        padding: 10px 15px !important;
-        font-size: 0.9rem !important;
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+        margin: 3px 0 !important;
     }
 
-    @media (max-width: 520px) {
-        .prompt-btn {
-            padding: 8px 12px !important;
-            font-size: 0.75rem !important;
-            margin: 4px 0 !important;
-        }
+    .stButton button {
+        padding: 6px 10px !important;
+        font-size: 0.75rem !important;
+    }
 
-        .logo-container {
-            padding: 4px 0 !important;
-        }
+    .logo-container {
+        padding: 4px 0 !important;
+    }
 
-        .logo-img {
-            width: 60px !important;
-        }
+    .logo-img {
+        max-width: 55px !important;
+        height: auto !important;
+        margin: 0 auto 6px auto !important;
+        display: block;
     }
 
     /* ------------------------------
@@ -1313,22 +1321,6 @@ def load_responsive_css():
     }
 
     /* ------------------------------
-       Logo Image
-    ------------------------------ */
-    .logo-img {
-        max-width: 100px !important;
-        height: auto !important;
-        display: block;
-        margin: 0 auto;
-    }
-
-    @media (max-width: 480px) {
-        .logo-img {
-            max-width: 70px !important;
-        }
-    }
-
-    /* ------------------------------
        File Upload Icon
     ------------------------------ */
     section[data-testid="stFileUploader"] button {
@@ -1350,9 +1342,9 @@ def load_responsive_css():
         left: 50%;
         transform: translate(-50%, -50%);
     }
-
     </style>
     """, unsafe_allow_html=True)
+
 
 # --- MAIN APP FLOW ---
 def main():
