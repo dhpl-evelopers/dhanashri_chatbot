@@ -736,6 +736,7 @@ def show_chat_ui():
                 font-weight: 600;
                 color: #555;
                 margin-top: 20px;
+                text-align: center;
             }
 
             .welcome-title {
