@@ -897,10 +897,11 @@ st.markdown("""
 # Display chat or empty state
 if not st.session_state.get("messages"):
     st.markdown("""
-    <div class="empty-state-container">
-        <div class="empty-state-title">What can I help with?</div>
-    </div>
-    """, unsafe_allow_html=True)
+     <div style="text-align: center; font-size: 24px; font-weight: 600; color: #555; margin-top: 100px;">
+        What can I help with?
+     </div>
+""", unsafe_allow_html=True)
+
 else:
     for msg in st.session_state.get("messages", []):
         role_class = "user-message" if msg["role"] == "user" else "bot-message"
