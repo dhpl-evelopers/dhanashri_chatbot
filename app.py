@@ -723,14 +723,14 @@ def show_chat_ui():
             }
 
             .empty-state-container {
-                text-align: center;
-                margin: 100px auto;
-                max-width: 500px;
-                padding: 30px;
-                border-radius: 16px;
-                background: white;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            }
+            text-align: center;
+            margin: 100px auto;
+            background: transparent;
+            box-shadow: none;
+            padding: 0;
+            max-width: 100%;
+       }
+
 
             .empty-state-title {
                 font-size: 24px;
@@ -959,11 +959,11 @@ def show_chat_ui():
     # Show empty state if no messages, otherwise show messages
     if not st.session_state.get("messages"):
         st.markdown("""
-        <div class="empty-state-container">
-            <div class="welcome-title">WELCOME TO RINGS & I 💍</div>
-            <div class="empty-state-title">What can I help with?</div>
+        <div style="text-align: center; font-size: 24px; font-weight: 600; color: #555; margin-top: 100px;">
+           What can I help with?
         </div>
-        """, unsafe_allow_html=True)
+ """, unsafe_allow_html=True)
+
     else:
         for msg in st.session_state.get("messages", []):
             role_class = "user-message" if msg["role"] == "user" else "bot-message"
