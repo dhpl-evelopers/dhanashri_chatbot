@@ -85,7 +85,7 @@ class Config:
     # OAuth Configuration
     GOOGLE_CLIENT_ID = "654156985064-vt48t8gj3qod98m4toivp6975lcdojom.apps.googleusercontent.com"
     GOOGLE_CLIENT_SECRET = "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"
-    REDIRECT_URI = "http://localhost:8501"
+    REDIRECT_URI = "https://dhanashrichatbot-xnkxs2akkodv7t5kzhrumh.streamlit.app"  # ✅ updated
     IMAGE_API_URL = "https://ringexpert-backend.azurewebsites.net/generate-image"
     # API Configuration
     CHAT_API_URL = "https://ringexpert-backend.azurewebsites.net/ask"
