@@ -260,15 +260,21 @@ class OAuthService:
             token = client.fetch_token(
                 "https://oauth2.googleapis.com/token",
                 code=code,
-                redirect_uri=Config.REDIRECT_URI
+                redirect_uri=Config.REDIRECT_URI,
+                client_id=Config.GOOGLE_CLIENT_ID,
+                client_secret=Config.GOOGLE_CLIENT_SECRET
             )
 
             user_info = client.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo").json()
+                "https://www.googleapis.com/oauth2/v3/userinfo"
+            ).json()
+            
             return user_info
+
         except Exception as e:
             logger.error(f"OAuth callback failed: {str(e)}")
             return None
+
 
 # --- HELPER FUNCTIONS ---
 
