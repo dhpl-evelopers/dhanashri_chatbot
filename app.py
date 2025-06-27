@@ -1209,10 +1209,12 @@ section[data-testid="stFileUploader"] button > div {
 
 # --- OAUTH CALLBACK HANDLER ---
 def handle_oauth_callback():
-    """Handle OAuth callback after authentication"""
-    params = st.query_params.to_dict()
-    if params.get("code") and params.get("state") == "google":
-        user_info = OAuthService.handle_google_callback(params["code"])
+    query_params = st.experimental_get_query_params()
+    code = query_params.get("code", [None])[0]
+    state = query_params.get("state", [None])[0]
+
+    if code and state == "google":
+        user_info = OAuthService.handle_google_callback(code)
         if user_info:
             email = user_info.get("email")
             if email:
@@ -1228,7 +1230,8 @@ def handle_oauth_callback():
                     )
                 if user:
                     complete_login(user)
-                    st.query_params.clear()
+                    st.experimental_set_query_params()  # clear ?code=... from URL
+
 
 
 def load_responsive_css():
