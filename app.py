@@ -997,7 +997,7 @@ def show_chat_ui():
     for file in remove_list:
         st.session_state.uploaded_file_list.remove(file)
 
-    prompt = st.chat_input("Ask...", key="chat_input")
+    
     if prompt:
         handle_user_prompt(prompt)
 
