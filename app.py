@@ -70,6 +70,9 @@ if "logged_in" not in st.session_state:
         "show_quick_prompts": True,
         "uploaded_file": None
     })
+if "uploaded_file_list" not in st.session_state:
+        st.session_state.uploaded_file_list = []
+
 
 # --- CONFIGURATION ---
 class Config:
@@ -313,59 +316,26 @@ def process_uploaded_file(uploaded_file):
         return None
 
 def handle_user_prompt(prompt, uploaded_files=None):
+    uploaded_files = st.session_state.get("uploaded_file_list", [])
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Collect file data
-    file_infos = []
-    stored_image_paths = []
+    # Show uploaded images in chat
+    for file in uploaded_files:
+        if file.type.startswith("image/"):
+            image_bytes = file.read()
+            b64_image = base64.b64encode(image_bytes).decode("utf-8")
+            img_html = f'<img src="data:{file.type};base64,{b64_image}" width="150"/>'
+            st.session_state.messages.append({"role": "user", "content": img_html})
 
-    if uploaded_files:
-      for file in uploaded_files:
-        if file:
-            unique_id = str(uuid.uuid4())
-            file_name = f"{unique_id}_{file.name}"
-            success = image_storage.upload_image(file.getvalue(), file_name, content_type=file.type)
-            if success:
-                stored_image_paths.append(f"https://imagestoragedata.blob.core.windows.net/images/{file_name}")
-
-
-    st.session_state.show_quick_prompts = False
-
-    with st.spinner(''):
-        try:
-            if "generate" in prompt.lower() and "ring" in prompt.lower():
-                # Image generation API
-                response = requests.post(
-                    Config.IMAGE_API_URL,
-                    json={"prompt": prompt},
-                    timeout=30
-                )
-                response.raise_for_status()
-                image_url = response.json().get("image_url", "")
-                answer = f"Here's your AI-generated ring:\n\n![Generated Ring]({image_url})" if image_url else "Sorry, the image could not be generated."
-            else:
-                # Regular Q&A API
-                payload = {
-                    "question": prompt,
-                    "files": file_infos
-                }
-                response = requests.post(
-                    Config.CHAT_API_URL,
-                    json=payload,
-                    timeout=15
-                )
-                answer = response.json().get("answer", "I couldn't process that request.")
-
-        except Exception as e:
-            logger.error(f"Error: {str(e)}")
-            answer = "Sorry, I'm having trouble connecting to the service."
-
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    # [YOUR EXISTING LOGIC FOR IMAGE/CHAT API]
 
     if st.session_state.logged_in:
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
 
+    # ✅ Clear uploaded list after sending
+    st.session_state.uploaded_file_list.clear()
     st.rerun()
+
 
 
 def complete_login(user_data):
@@ -994,38 +964,50 @@ def show_chat_ui():
     # File upload and chat input
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
     
-    # Chat input
-    # File upload and chat input
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+    
 
     prompt = st.chat_input("Ask...", key="chat_input")
 
     uploaded_files = st.file_uploader(
-        "📎",
-        key="file_upload",
-        label_visibility="collapsed",
-        accept_multiple_files=True,
-        help="Upload up to 3 files"
-    )
+    "📎", 
+    key="file_upload", 
+    label_visibility="collapsed", 
+    accept_multiple_files=True, 
+    help="Upload up to 3 files"
+)
 
+# ✅ Add new uploaded files to session state
+    if uploaded_files:
+        for file in uploaded_files:
+            if file not in st.session_state.uploaded_file_list:
+                st.session_state.uploaded_file_list.append(file)
+
+    # ✅ Show previews and ❌ buttons
+    remove_list = []
+    for i, file in enumerate(st.session_state.uploaded_file_list):
+        cols = st.columns([1, 6, 1])
+        with cols[0]:
+            st.image(file, width=40)
+        with cols[1]:
+            st.markdown(f"**{file.name}**")
+        with cols[2]:
+            if st.button("❌", key=f"remove_file_{i}"):
+                remove_list.append(file)
+
+    for file in remove_list:
+        st.session_state.uploaded_file_list.remove(file)
+
+    prompt = st.chat_input("Ask...", key="chat_input")
     if prompt:
-        handle_user_prompt(prompt, uploaded_files)
+        handle_user_prompt(prompt)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # End file upload container
 
-
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-
-    # Footer
+    # --- FOOTER ---
     st.markdown("""
-    <div class="footer-container" style="
-        position: fixed; bottom: 18px; left: 0; right: 0;
+    <div class="footer-container" style="position: fixed; bottom: 18px; left: 0; right: 0;
         background: white; padding: 5px 0; text-align: center;
-        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;
-    ">
+        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;">
         <div class="footer-content">
             Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
         </div>
