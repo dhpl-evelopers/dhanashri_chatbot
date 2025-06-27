@@ -232,11 +232,17 @@ storage = AzureStorage()
 # --- OAUTH SERVICE ---
 
 
+from authlib.integrations.requests_client import OAuth2Session
+from config import Config
+import logging
+
+logger = logging.getLogger(__name__)
+
 class OAuthService:
     @staticmethod
     def get_google_auth_url():
         client = OAuth2Session(
-            client_id=Config.CLIENT_ID,  # ✅ CLIENT_ID only
+            client_id=Config.CLIENT_ID,
             redirect_uri=Config.REDIRECT_URI
         )
         auth_url, _ = client.create_authorization_url(
@@ -249,28 +255,23 @@ class OAuthService:
         return auth_url
 
     @staticmethod
-   def handle_google_callback(code):
-    try:
-        client = OAuth2Session(
-            Config.CLIENT_ID,  # ✅ Use CLIENT_ID
-            redirect_uri=Config.REDIRECT_URI  # ✅ Must match Google Console
-        )
+    def handle_google_callback(code):
+        try:
+            client = OAuth2Session(
+                client_id=Config.CLIENT_ID,
+                redirect_uri=Config.REDIRECT_URI
+            )
+            token = client.fetch_token(
+                "https://oauth2.googleapis.com/token",
+                code=code,
+                client_secret=Config.CLIENT_SECRET
+            )
+            user_info = client.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
+            return user_info
+        except Exception as e:
+            logger.error(f"OAuth callback failed: {str(e)}")
+            return None
 
-        # ✅ Fetch token from Google
-        token = client.fetch_token(
-            "https://oauth2.googleapis.com/token",
-            code=code,
-            client_secret=Config.CLIENT_SECRET
-        )
-
-        # ✅ Get user info
-        user_info = client.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
-
-        return user_info
-
-    except Exception as e:
-        logger.error(f"OAuth callback failed: {str(e)}")
-        return None
 
 
 
