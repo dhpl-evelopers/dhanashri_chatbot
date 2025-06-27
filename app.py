@@ -69,6 +69,9 @@ if "logged_in" not in st.session_state:
         "show_quick_prompts": True,
         "uploaded_file": None
     })
+if "uploaded_file_list" not in st.session_state:
+    st.session_state.uploaded_file_list = []
+
 
 # --- CONFIGURATION ---
 
@@ -225,6 +228,7 @@ class AzureStorage:
 # Initialize storage
 storage = AzureStorage()
 
+image_storage = ImageStorage()
 # --- OAUTH SERVICE ---
 
 
@@ -299,56 +303,25 @@ def process_uploaded_file(uploaded_file):
 
 
 def handle_user_prompt(prompt, uploaded_files=None):
+    uploaded_files = st.session_state.get("uploaded_file_list", [])
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # Collect file data
-    file_infos = []
-    if uploaded_files:
-        for file in uploaded_files:
-            file_data = process_uploaded_file(file)
-            if file_data:
-                file_infos.append({
-                    "file_name": file.name,
-                    "file_type": file.type,
-                    "data": file_data
-                })
+    # Show uploaded images in chat
+    for file in uploaded_files:
+        if file.type.startswith("image/"):
+            image_bytes = file.read()
+            b64_image = base64.b64encode(image_bytes).decode("utf-8")
+            img_html = f'<img src="data:{file.type};base64,{b64_image}" width="150"/>'
+            st.session_state.messages.append(
+                {"role": "user", "content": img_html})
 
-    st.session_state.show_quick_prompts = False
-
-    with st.spinner(''):
-        try:
-            if "generate" in prompt.lower() and "ring" in prompt.lower():
-                # Image generation API
-                response = requests.post(
-                    Config.IMAGE_API_URL,
-                    json={"prompt": prompt},
-                    timeout=30
-                )
-                response.raise_for_status()
-                image_url = response.json().get("image_url", "")
-                answer = f"Here's your AI-generated ring:\n\n![Generated Ring]({image_url})" if image_url else "Sorry, the image could not be generated."
-            else:
-                # Regular Q&A API
-                payload = {
-                    "question": prompt,
-                    "files": file_infos
-                }
-                response = requests.post(
-                    Config.CHAT_API_URL,
-                    json=payload,
-                    timeout=15
-                )
-                answer = response.json().get("answer", "I couldn't process that request.")
-
-        except Exception as e:
-            logger.error(f"Error: {str(e)}")
-            answer = "Sorry, I'm having trouble connecting to the service."
-
-    st.session_state.messages.append({"role": "assistant", "content": answer})
+    # [YOUR EXISTING LOGIC FOR IMAGE/CHAT API]
 
     if st.session_state.logged_in:
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
 
+    # ✅ Clear uploaded list after sending
+    st.session_state.uploaded_file_list.clear()
     st.rerun()
 
 
@@ -994,6 +967,12 @@ def show_chat_ui():
     # File upload and chat input
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
 
+    # Chat input
+    # File upload and chat input
+    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+
+    prompt = st.chat_input("Ask...", key="chat_input")
+
     uploaded_files = st.file_uploader(
         "📎",
         key="file_upload",
@@ -1001,13 +980,6 @@ def show_chat_ui():
         accept_multiple_files=True,
         help="Upload up to 3 files"
     )
-
-    # --- Analyse Image Button ---
-    if uploaded_files:
-        if st.button("Analyse Image", key="analyse_image_btn"):
-            analyse_images_pipeline(uploaded_files)
-
-    prompt = st.chat_input("Ask...", key="chat_input")
 
     if prompt:
         handle_user_prompt(prompt, uploaded_files)
@@ -1018,11 +990,9 @@ def show_chat_ui():
 
     # Footer
     st.markdown("""
-    <div class="footer-container" style="
-        position: fixed; bottom: 18px; left: 0; right: 0;
+    <div class="footer-container" style="position: fixed; bottom: 18px; left: 0; right: 0;
         background: white; padding: 5px 0; text-align: center;
-        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;
-    ">
+        z-index: 999; width: calc(100% - 16rem); margin-left: 25rem;">
         <div class="footer-content">
             Powered by RINGS & I | <a href="https://ringsandi.com" target="_blank">Visit ringsandi.com!</a>
         </div>
