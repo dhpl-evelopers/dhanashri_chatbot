@@ -24,7 +24,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
-import streamlit as st
+
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -215,9 +215,38 @@ class AzureStorage:
         except:
             return False
 
+
+
+class ImageStorage:
+    def __init__(self):
+        self.connection_string = (
+            "DefaultEndpointsProtocol=https;"
+            "AccountName=imagestoragedata;"
+            "AccountKey=ZDzW8nWYdHr82c7Qk4B/Zr6s7bbswkHC8cm9/7p9vTZpoFsy9rlDc9igcnfH62yqh2ySnMjgWjMC+ASt4aMmTg==;"
+            "EndpointSuffix=core.windows.net"
+        )
+        try:
+            self.blob_service = BlobServiceClient.from_connection_string(self.connection_string)
+            self.container = self.blob_service.get_container_client("images")
+            if not self.container.exists():
+                self.container.create_container()
+        except Exception as e:
+            st.error("❌ Failed to connect to image storage.")
+            logging.error(e)
+            st.stop()
+
+    def upload_image(self, file_data, file_name, content_type=None):
+        try:
+            blob = self.container.get_blob_client(file_name)
+            blob.upload_blob(file_data, overwrite=True, content_type=content_type)
+            return True
+        except Exception as e:
+            logging.error(f"❌ Upload error: {e}")
+            return False
 # Initialize storage
 storage = AzureStorage()
 
+image_storage = ImageStorage()
 # --- OAUTH SERVICE ---
 class OAuthService:
     @staticmethod
@@ -288,15 +317,17 @@ def handle_user_prompt(prompt, uploaded_files=None):
 
     # Collect file data
     file_infos = []
+    stored_image_paths = []
+
     if uploaded_files:
-        for file in uploaded_files:
-            file_data = process_uploaded_file(file)
-            if file_data:
-                file_infos.append({
-                    "file_name": file.name,
-                    "file_type": file.type,
-                    "data": file_data
-                })
+      for file in uploaded_files:
+        if file:
+            unique_id = str(uuid.uuid4())
+            file_name = f"{unique_id}_{file.name}"
+            success = image_storage.upload_image(file.getvalue(), file_name, content_type=file.type)
+            if success:
+                stored_image_paths.append(f"https://imagestoragedata.blob.core.windows.net/images/{file_name}")
+
 
     st.session_state.show_quick_prompts = False
 
