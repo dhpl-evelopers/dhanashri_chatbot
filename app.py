@@ -233,7 +233,6 @@ storage = AzureStorage()
 
 
 from authlib.integrations.requests_client import OAuth2Session
-from config import Config
 import logging
 
 logger = logging.getLogger(__name__)
@@ -258,13 +257,13 @@ class OAuthService:
     def handle_google_callback(code):
         try:
             client = OAuth2Session(
-                client_id=Config.CLIENT_ID,
+                client_id=Config.GOOGLE_CLIENT_ID,
                 redirect_uri=Config.REDIRECT_URI
             )
             token = client.fetch_token(
                 "https://oauth2.googleapis.com/token",
                 code=code,
-                client_secret=Config.CLIENT_SECRET
+                client_secret=Config.GOOGLE_CLIENT_SECRET
             )
             user_info = client.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
             return user_info
