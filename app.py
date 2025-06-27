@@ -1,4 +1,3 @@
-
 import streamlit as st
 import bcrypt
 import os
@@ -19,13 +18,12 @@ logger = logging.getLogger(__name__)
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
-    page_title="RINGS & I - AI Ring Advisor", 
-    page_icon="💍", 
+    page_title="RINGS & I - AI Ring Advisor",
+    page_icon="💍",
     layout="centered",
     initial_sidebar_state="expanded",
     menu_items=None
 )
-import streamlit as st
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -73,6 +71,8 @@ if "logged_in" not in st.session_state:
     })
 
 # --- CONFIGURATION ---
+
+
 class Config:
     # Azure Storage Configuration
     AZURE_CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=botstorageai;AccountKey=JLxGrpJew2O1QXFG6HP5nP+oQdu8MtqVc5mC09/Z67Kq2qh+CnyH/4gZK5+6W4CIjw/G105NTAX++AStXmSbbA==;EndpointSuffix=core.windows.net"
@@ -97,29 +97,33 @@ class Config:
     ]
 
 # --- AZURE STORAGE SERVICE ---
+
+
 class AzureStorage:
     def __init__(self):
         self._initialize_storage()
-        
+
     def _initialize_storage(self):
         """Initialize and validate Azure Storage connection"""
         try:
             logger.info("Initializing Azure Storage connection")
-            self.blob_service = BlobServiceClient.from_connection_string(Config.AZURE_CONNECTION_STRING)
-            self.container = self.blob_service.get_container_client(Config.CONTAINER_NAME)
-            
+            self.blob_service = BlobServiceClient.from_connection_string(
+                Config.AZURE_CONNECTION_STRING)
+            self.container = self.blob_service.get_container_client(
+                Config.CONTAINER_NAME)
+
             if not self.container.exists():
                 logger.info(f"Creating container: {Config.CONTAINER_NAME}")
                 self.container.create_container()
                 self._initialize_folder_structure()
-                
+
             logger.info("Azure Storage initialized successfully")
-            
+
         except Exception as e:
             logger.error(f"Storage initialization failed: {str(e)}")
             st.error("Failed to initialize storage system. Please contact support.")
             st.stop()
-    
+
     def _initialize_folder_structure(self):
         """Create required directory structure"""
         try:
@@ -128,7 +132,7 @@ class AzureStorage:
             logger.info("Created storage folder structure")
         except Exception as e:
             logger.warning(f"Couldn't create folders: {str(e)}")
-    
+
     def upload_blob(self, blob_name, data):
         """Secure blob upload with validation"""
         try:
@@ -140,17 +144,18 @@ class AzureStorage:
         except Exception as e:
             logger.error(f"Upload failed for {blob_name}: {str(e)}")
             return False
-    
+
     def upload_file(self, blob_name, file_data, content_type=None):
         """Upload file data to blob storage"""
         try:
             blob = self.container.get_blob_client(blob_name)
-            blob.upload_blob(file_data, overwrite=True, content_type=content_type)
+            blob.upload_blob(file_data, overwrite=True,
+                             content_type=content_type)
             return True
         except Exception as e:
             logger.error(f"File upload failed for {blob_name}: {str(e)}")
             return False
-    
+
     def download_blob(self, blob_name):
         """Secure blob download with validation"""
         try:
@@ -161,17 +166,17 @@ class AzureStorage:
         except Exception as e:
             logger.error(f"Download failed for {blob_name}: {str(e)}")
             return None
-    
+
     def blob_exists(self, blob_name):
         try:
             return self.container.get_blob_client(blob_name).exists()
         except Exception as e:
             logger.error(f"Existence check failed for {blob_name}: {str(e)}")
             return False
-    
+
     def user_exists(self, email):
         return self.blob_exists(f"users/{email}.json")
-    
+
     def create_user(self, email, password=None, username=None, provider=None, **kwargs):
         user_data = {
             "user_id": str(uuid.uuid4()),
@@ -183,43 +188,46 @@ class AzureStorage:
             "last_login": datetime.utcnow().isoformat(),
             **kwargs
         }
-        
+
         if self.upload_blob(f"users/{email}.json", user_data):
             return user_data
         return None
-    
+
     def get_user(self, email):
         data = self.download_blob(f"users/{email}.json")
         return json.loads(data) if data else None
-    
+
     def authenticate_user(self, email, password):
         user = self.get_user(email)
         if user and self._check_password(password, user["password"]):
             return user
         return None
-    
+
     def save_chat(self, user_id, messages):
         if messages:  # Only save if there are messages
             return self.upload_blob(f"chats/{user_id}.json", messages)
         return False
-    
+
     def load_chat(self, user_id):
         data = self.download_blob(f"chats/{user_id}.json")
         return json.loads(data) if data else []
-    
+
     def _hash_password(self, password):
         return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-    
+
     def _check_password(self, input_password, hashed_password):
         try:
             return bcrypt.checkpw(input_password.encode(), hashed_password.encode())
         except:
             return False
 
+
 # Initialize storage
 storage = AzureStorage()
 
 # --- OAUTH SERVICE ---
+
+
 class OAuthService:
     @staticmethod
     def get_google_auth_url():
@@ -235,7 +243,7 @@ class OAuthService:
             prompt="consent",
             state="google"
         )[0]
-    
+
     @staticmethod
     def handle_google_callback(code):
         try:
@@ -244,24 +252,28 @@ class OAuthService:
                 Config.GOOGLE_CLIENT_SECRET,
                 redirect_uri=Config.REDIRECT_URI
             )
-            
+
             token = client.fetch_token(
                 "https://oauth2.googleapis.com/token",
                 code=code,
                 redirect_uri=Config.REDIRECT_URI
             )
-            
-            user_info = client.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
+
+            user_info = client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo").json()
             return user_info
         except Exception as e:
             logger.error(f"OAuth callback failed: {str(e)}")
             return None
 
 # --- HELPER FUNCTIONS ---
+
+
 def validate_email(email):
     """Validate email format using regex"""
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     return re.match(pattern, email) is not None
+
 
 def validate_password(password):
     """Validate password meets complexity requirements"""
@@ -273,6 +285,7 @@ def validate_password(password):
         return False, "Password must contain at least one special character"
     return True, ""
 
+
 def process_uploaded_file(uploaded_file):
     """Process uploaded file and return base64 encoded string"""
     try:
@@ -283,6 +296,7 @@ def process_uploaded_file(uploaded_file):
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
         return None
+
 
 def handle_user_prompt(prompt, uploaded_files=None):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -352,24 +366,25 @@ def complete_login(user_data):
         "temp_user": False,
         "show_quick_prompts": True
     })
-    
+
     # Update last login time
     try:
         user_data["last_login"] = datetime.utcnow().isoformat()
         storage.upload_blob(f"users/{user_data['email']}.json", user_data)
     except Exception as e:
         logger.error(f"Error updating last login: {str(e)}")
-    
+
     st.rerun()
+
 
 def logout():
     """Handle logout process"""
     if st.session_state.logged_in and st.session_state.user_id:
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
-    
+
     # Preserve messages for guest users
     temp_messages = st.session_state.messages if st.session_state.temp_user else []
-    
+
     st.session_state.update({
         "logged_in": False,
         "user_id": None,
@@ -382,12 +397,14 @@ def logout():
         "show_quick_prompts": True,
         "uploaded_file": None
     })
-    
+
     # Restore messages for guest users
     st.session_state.messages = temp_messages
     st.rerun()
 
 # --- AUTHENTICATION UI ---
+
+
 def show_auth_ui():
     st.markdown("""
         <style>
@@ -453,14 +470,15 @@ def show_auth_ui():
             <div class="welcome-subtitle">The RingExpert is here to help. Ask away!</div>
         </div>
     """, unsafe_allow_html=True)
-    
+
     tabs = st.tabs(["Sign In", "Create Account"])
-    
+
     with tabs[0]:
         show_login_form()
-    
+
     with tabs[1]:
         show_register_form()
+
 
 def show_login_form():
     """Login form with Forgot Password allowing password reset"""
@@ -468,11 +486,15 @@ def show_login_form():
         st.markdown("### 🔐 Reset Your Password")
 
         with st.form("forgot_password_form"):
-            reset_email = st.text_input("Registered Email", placeholder="you@example.com")
-            new_password = st.text_input("New Password", type="password", placeholder="Create a new password")
-            confirm_password = st.text_input("Confirm New Password", type="password")
+            reset_email = st.text_input(
+                "Registered Email", placeholder="you@example.com")
+            new_password = st.text_input(
+                "New Password", type="password", placeholder="Create a new password")
+            confirm_password = st.text_input(
+                "Confirm New Password", type="password")
 
-            submit_btn = st.form_submit_button("Update Password", type="primary")
+            submit_btn = st.form_submit_button(
+                "Update Password", type="primary")
 
             if submit_btn:
                 if not validate_email(reset_email):
@@ -487,9 +509,12 @@ def show_login_form():
                         st.error(msg)
                     else:
                         user_data = storage.get_user(reset_email)
-                        user_data["password"] = storage._hash_password(new_password)
-                        storage.upload_blob(f"users/{reset_email}.json", user_data)
-                        st.success("✅ Password updated successfully! Please log in with your new password.")
+                        user_data["password"] = storage._hash_password(
+                            new_password)
+                        storage.upload_blob(
+                            f"users/{reset_email}.json", user_data)
+                        st.success(
+                            "✅ Password updated successfully! Please log in with your new password.")
                         st.session_state.show_forgot_password = False
                         st.rerun()
 
@@ -499,8 +524,10 @@ def show_login_form():
 
     else:
         with st.form(key="login_form"):
-            email = st.text_input("Email Address", key="login_email", placeholder="Enter your email")
-            password = st.text_input("Password", type="password", key="login_password", placeholder="Enter your password")
+            email = st.text_input(
+                "Email Address", key="login_email", placeholder="Enter your email")
+            password = st.text_input(
+                "Password", type="password", key="login_password", placeholder="Enter your password")
 
             # Forgot Password Link (below password field)
             col1, col2 = st.columns([2, 1])
@@ -569,37 +596,37 @@ def show_login_form():
         """, unsafe_allow_html=True)
 
         st.markdown('<div class="divider">OR</div>', unsafe_allow_html=True)
-        
+
         google_auth_url = OAuthService.get_google_auth_url()
         st.markdown(
-    f'<a href="{google_auth_url}" class="google-btn" target="_self">'
-    f'<img src="{Config.GOOGLE_LOGO_URL}" class="google-logo">Sign in with Google</a>',
-    unsafe_allow_html=True
-)
-
-
-
+            f'<a href="{google_auth_url}" class="google-btn" target="_self">'
+            f'<img src="{Config.GOOGLE_LOGO_URL}" class="google-logo">Sign in with Google</a>',
+            unsafe_allow_html=True
+        )
 
 
 def show_register_form():
     """Show only the registration form"""
     with st.form(key="register_form"):
         col1, col2 = st.columns(2)
-        
+
         with col1:
             first_name = st.text_input("First Name*", help="Required field")
-            email = st.text_input("Email Address*", help="We'll use this for account recovery")
-            
+            email = st.text_input(
+                "Email Address*", help="We'll use this for account recovery")
+
         with col2:
             last_name = st.text_input("Last Name")
-            username = st.text_input("Username*", help="This will be visible to others")
-        
-        password = st.text_input("Password*", type="password", 
-                               help="Minimum 8 characters with at least 1 number and 1 special character")
+            username = st.text_input(
+                "Username*", help="This will be visible to others")
+
+        password = st.text_input("Password*", type="password",
+                                 help="Minimum 8 characters with at least 1 number and 1 special character")
         confirm_password = st.text_input("Confirm Password*", type="password")
-        
-        agree = st.checkbox("I agree to the Terms of Service and Privacy Policy*", value=False)
-        
+
+        agree = st.checkbox(
+            "I agree to the Terms of Service and Privacy Policy*", value=False)
+
         if st.form_submit_button("Create Account", type="primary"):
             if not all([first_name, email, username, password, confirm_password, agree]):
                 st.error("Please fill all required fields (marked with *)")
@@ -629,18 +656,23 @@ def show_register_form():
                             last_name=last_name,
                             full_name=full_name
                         )
-                        
+
                         if user_data:
-                            st.success("🎉 Account created successfully! Please login with your credentials.")
+                            st.success(
+                                "🎉 Account created successfully! Please login with your credentials.")
                             st.session_state.auth_tab = "login"
                             st.rerun()
                         else:
-                            st.error("Failed to create account. Please try again.")
+                            st.error(
+                                "Failed to create account. Please try again.")
                     except Exception as e:
                         logger.error(f"Registration error: {str(e)}")
-                        st.error("An error occurred during registration. Please try again.")
+                        st.error(
+                            "An error occurred during registration. Please try again.")
 
 # --- CHAT UI ---
+
+
 def show_chat_ui():
     if st.session_state.get("show_auth"):
         show_auth_ui()
@@ -795,41 +827,40 @@ def show_chat_ui():
         </div>
         """, unsafe_allow_html=True)
 
-
         # Explore Button
         # Show explore button ONLY when not logged in
         if not st.session_state.logged_in:
-           if st.button("🔍 Explore the details of your ring", key="explore_btn", use_container_width=True):
-            st.session_state.show_auth = True
-            st.rerun()
-            st.markdown('<div class="explore-button"></div>', unsafe_allow_html=True)
-
+            if st.button("🔍 Explore the details of your ring", key="explore_btn", use_container_width=True):
+                st.session_state.show_auth = True
+                st.rerun()
+                st.markdown('<div class="explore-button"></div>',
+                            unsafe_allow_html=True)
 
         # PROMPTS based on login state
         if st.session_state.logged_in:
-         st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;">
+            st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;">
         <strong>🧠 AI RingExpert is ready to help you!</strong>
     </div>""", unsafe_allow_html=True)
 
     # 🆕 Instruction line
-         st.markdown("""
+            st.markdown("""
         <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
-            Let’s help you to determine the following details
+            Let's help you to determine the following details
         </div>
         <hr style="margin-bottom: 20px;">
     """, unsafe_allow_html=True)
 
     # After login prompts
-         for emoji, label in [
-        ("💎", "Size of Diamonds"),
-        ("🔢", "Number of Diamonds on the Ring"),
-        ("⚖️", "Quantity of Gold"),
-        ("🟡", "Gold Karat")
-    ]:
+            for emoji, label in [
+                ("💎", "Size of Diamonds"),
+                ("🔢", "Number of Diamonds on the Ring"),
+                ("⚖️", "Quantity of Gold"),
+                ("🟡", "Gold Karat")
+            ]:
 
-                if st.button(f"{emoji} {label}", key=f"user_{label[:10].lower().replace(' ','_')}", use_container_width=True):
+                if st.button(f"{emoji} {label}", key=f"user_{label[:10].lower().replace(' ', '_')}", use_container_width=True):
                     handle_user_prompt(label)
-    
+
         else:
             # Before login prompts
             for emoji, text in [
@@ -839,10 +870,9 @@ def show_chat_ui():
                 ("💰", "14K vs 18K gold - main differences"),
                 ("💎", "Platinum vs gold purity comparison")
             ]:
-                if st.button(f"{emoji} {text}", key=f"prompt_{text[:10].lower().replace(' ','_')}",
+                if st.button(f"{emoji} {text}", key=f"prompt_{text[:10].lower().replace(' ', '_')}",
                              help=f"Ask about {text}", use_container_width=True):
                     handle_user_prompt(text)
-
 
         # USER STATUS block
         if st.session_state.logged_in:
@@ -868,7 +898,6 @@ def show_chat_ui():
             if st.button("Login / Sign Up", key="sidebar_login_btn_sidebar", type="primary", use_container_width=True):
                 st.session_state.show_auth = True
                 st.rerun()
-
 
     # Main chat UI
     st.markdown("""
@@ -957,18 +986,13 @@ def show_chat_ui():
     else:
         for msg in st.session_state.get("messages", []):
             role_class = "user-message" if msg["role"] == "user" else "bot-message"
-            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
-    
+            st.markdown(
+                f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
+
     st.markdown('</div>', unsafe_allow_html=True)
 
     # File upload and chat input
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
-    
-    # Chat input
-    # File upload and chat input
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
-
-    prompt = st.chat_input("Ask...", key="chat_input")
 
     uploaded_files = st.file_uploader(
         "📎",
@@ -978,16 +1002,19 @@ def show_chat_ui():
         help="Upload up to 3 files"
     )
 
+    # --- Analyse Image Button ---
+    if uploaded_files:
+        if st.button("Analyse Image", key="analyse_image_btn"):
+            analyse_images_pipeline(uploaded_files)
+
+    prompt = st.chat_input("Ask...", key="chat_input")
+
     if prompt:
         handle_user_prompt(prompt, uploaded_files)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-
-    
     st.markdown('</div>', unsafe_allow_html=True)
-
-
 
     # Footer
     st.markdown("""
@@ -1002,7 +1029,48 @@ def show_chat_ui():
     </div>
     """, unsafe_allow_html=True)
 
+    # --- Gold Result Card ---
+    if st.session_state.get('gold_result'):
+        gold_result = st.session_state['gold_result']
+        # Format total carat weight to 3 decimal places
+        diamond_weight_val = gold_result.get('diamond_weight', '-')
+        try:
+            if diamond_weight_val is not None and diamond_weight_val != '-':
+                diamond_weight_val = float(diamond_weight_val)
+                diamond_weight_val = f"{diamond_weight_val:.3f}"
+        except Exception:
+            diamond_weight_val = gold_result.get('diamond_weight', '-')
+        st.markdown(f"""
+            <div style='background: linear-gradient(120deg, #fffbe6 0%, #f8f9fa 100%); border: 2px solid #ffe066; border-radius: 22px; padding: 36px 32px 24px 32px; margin-bottom: 32px; box-shadow: 0 4px 24px rgba(212,175,55,0.10); max-width: 600px; margin-left: auto; margin-right: auto;'>
+                <div style='display: flex; align-items: center; justify-content: center; margin-bottom: 18px;'>
+                    <span style='font-size: 2.5rem; margin-right: 12px;'>💍</span>
+                    <span style='font-size: 2.1rem; font-weight: 800; color: #bfa14a; letter-spacing: 1px;'>Ring Analysis Summary</span>
+                </div>
+                <hr style='margin: 10px 0 24px 0; border: none; border-top: 2px solid #ffe066;'/>
+                <div style='display: flex; flex-wrap: wrap; gap: 0 32px;'>
+                    <div style='flex: 1 1 220px;'>
+                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>🖼️ Images Processed:</b> {gold_result.get('images_processed', '-')}</div>
+                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>💎 Total Diamonds:</b> {gold_result.get('total_diamonds', '-')}</div>
+                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>💠 Total Carat Weight:</b> {diamond_weight_val}</div>
+                    </div>
+                    <div style='flex: 1 1 220px;'>
+                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>📏 Ring Size:</b> {gold_result.get('ring_size', '-')}</div>
+                    </div>
+                </div>
+                <div style='background: linear-gradient(90deg, #fffbe6 0%, #ffe066 100%); border-radius:14px; padding: 22px 0 18px 0; margin:28px 0 0 0; box-shadow: 0 2px 8px rgba(212,175,55,0.07); text-align:center;'>
+                    <span style='font-size:24px; color:#228be6; font-weight:800;'>18K Gold:</span> <span style='font-size:24px; color:#222; font-weight:700;'>{gold_result.get('gold_18k', '-')} grams</span><br/>
+                    <span style='font-size:24px; color:#bfa14a; font-weight:800;'>14K Gold:</span> <span style='font-size:24px; color:#222; font-weight:700;'>{gold_result.get('gold_14k', '-')} grams</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Dismiss Gold Estimate", key="dismiss_gold_card_btn"):
+            st.session_state['gold_result'] = None
+            st.session_state['show_gold_modal'] = False
+            st.rerun()
+
 # --- CSS STYLING ---
+
+
 def load_css():
     import streamlit as st
     st.markdown("""
@@ -1181,6 +1249,8 @@ def handle_oauth_callback():
                 if user:
                     complete_login(user)
                     st.query_params.clear()
+
+
 def load_responsive_css():
     import streamlit as st
     st.markdown("""
@@ -1345,7 +1415,137 @@ def load_responsive_css():
     """, unsafe_allow_html=True)
 
 
+# --- IMAGE ANALYSIS PIPELINE ---
+def analyse_images_pipeline(uploaded_files):
+    import streamlit as st
+    import requests
+    import base64
+    if not uploaded_files:
+        st.warning("Please upload at least one image to analyse.")
+        return
+    # Convert images to base64
+    images_b64 = []
+    for file in uploaded_files:
+        file_bytes = file.getvalue()
+        b64 = base64.b64encode(file_bytes).decode('utf-8')
+        images_b64.append(b64)
+    # 1. Call first API to get diamond count
+    api1_url = "https://diamond-count-analysis.centralindia.inference.ml.azure.com/score"
+    api1_token = "AIk6eqLSWKnvD6mBhtLNcOQycfbUtrKXh9tzWqXbgldE5MADQavLJQQJ99BFAAAAAAAAAAAAINFRAZML4Tbb"
+    headers1 = {"Authorization": f"Bearer {api1_token}"}
+    body1 = {"images": images_b64}
+    try:
+        with st.spinner("Analysing image for diamond count..."):
+            resp1 = requests.post(api1_url, json=body1,
+                                  headers=headers1, timeout=60)
+            resp1.raise_for_status()
+            diamond_count = resp1.json().get("prediction")
+            if diamond_count is None:
+                st.error("First API did not return a diamond count.")
+                return
+            st.success(f"Number of diamonds detected: {diamond_count}")
+    except Exception as e:
+        st.error(f"Error in first analysis API: {e}")
+        return
+    # 2. Call second API with images and diamond count
+    api2_url = "https://diamond-count-analysis-xdahy.centralindia.inference.ml.azure.com/score"
+    api2_token = "FCcJeeKvQNBjjw8mN78So94pafwIfP9mdfamDy3B7yoKiEfURx0EJQQJ99BFAAAAAAAAAAAAINFRAZML2MOQ"
+    headers2 = {"Authorization": f"Bearer {api2_token}"}
+    body2 = {"images": images_b64, "num_diamonds": diamond_count}
+    try:
+        with st.spinner("Running second analysis with diamond count..."):
+            resp2 = requests.post(api2_url, json=body2,
+                                  headers=headers2, timeout=60)
+            resp2.raise_for_status()
+            import json
+            result2 = resp2.json()
+            if isinstance(result2, str):
+                try:
+                    result2 = json.loads(result2)
+                except Exception:
+                    st.error(
+                        "Second API returned a string that could not be parsed as JSON.")
+                    st.write("Raw response:", result2)
+                    return
+            prediction = result2.get("prediction", {})
+            total_carat_weight = prediction.get("total_carat_weight")
+            num_diamonds = prediction.get("num_diamonds") or prediction.get(
+                "num_diamonds", diamond_count)
+            if total_carat_weight is not None:
+                st.success(f"Total Carat Weight: {total_carat_weight}")
+            else:
+                st.warning(
+                    "Could not extract total carat weight from the response.")
+
+            # --- Third API Call ---
+            # Prepare data for third API
+            ring_id = "test_ring_001"  # Placeholder, can be dynamic
+            total_diamonds = num_diamonds if num_diamonds is not None else diamond_count
+            diamond_weight = total_carat_weight
+            ring_size = 12.0  # Placeholder, can be dynamic
+            diamond_weight_available = 1.0  # Placeholder
+            ring_size_available = 1.0  # Placeholder
+            images = images_b64
+            if total_diamonds is None or diamond_weight is None:
+                st.warning(
+                    "Cannot call third API: missing diamond count or carat weight.")
+                return
+            api3_url = "https://gold-weight-endpoint.centralindia.inference.ml.azure.com/score"
+            api3_token = "03oU2hS62pbblSnXemnmMtIb2RJW3iJkWvCfapzO3OLQfEltP0tlJQQJ99BFAAAAAAAAAAAAINFRAZML4ML3"
+            headers3 = {"Content-Type": "application/json"}
+            if api3_token:
+                headers3["Authorization"] = f"Bearer {api3_token}"
+            body3 = {
+                "ring_id": ring_id,
+                "total_diamonds": total_diamonds,
+                "diamond_weight": diamond_weight,
+                "ring_size": ring_size,
+                "diamond_weight_available": diamond_weight_available,
+                "ring_size_available": ring_size_available,
+                "images": images
+            }
+            try:
+                with st.spinner("Estimating gold weights (third analysis)..."):
+                    resp3 = requests.post(
+                        api3_url, json=body3, headers=headers3, timeout=60)
+                    resp3.raise_for_status()
+                    result3 = resp3.json()
+                    if isinstance(result3, str):
+                        try:
+                            result3 = json.loads(result3)
+                        except Exception:
+                            st.error(
+                                "Third API returned a string that could not be parsed as JSON.")
+                            st.write("Raw response:", result3)
+                            return
+                    gold_18k = result3.get("gold_18k")
+                    gold_14k = result3.get("gold_14k")
+                    ring_id = result3.get("ring_id")
+                    images_processed = result3.get("images_processed")
+                    # Store all relevant info for the card
+                    st.session_state['gold_result'] = {
+                        'gold_18k': gold_18k,
+                        'gold_14k': gold_14k,
+                        'ring_id': ring_id,
+                        'images_processed': images_processed,
+                        'total_diamonds': total_diamonds,
+                        'diamond_weight': diamond_weight,
+                        'ring_size': ring_size,
+                        'diamond_weight_available': diamond_weight_available,
+                        'ring_size_available': ring_size_available
+                    }
+                    st.session_state['show_gold_modal'] = False
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error in third analysis API: {e}")
+                return
+    except Exception as e:
+        st.error(f"Error in second analysis API: {e}")
+        return
+
 # --- MAIN APP FLOW ---
+
+
 def main():
     load_css()  # Keep if you still need it
     load_responsive_css()  # 👈 Add this line
