@@ -9,7 +9,7 @@ class OAuthService:
     def get_google_auth_url():
         try:
             client = OAuth2Session(
-                client_id=Config.CLIENT_ID,
+                client_id=Config.GOOGLE_CLIENT_ID,
                 redirect_uri=Config.REDIRECT_URI
             )
 
@@ -31,7 +31,7 @@ class OAuthService:
         try:
             # Re-create the OAuth2 session to exchange code for tokens
             client = OAuth2Session(
-                client_id=Config.CLIENT_ID,
+                client_id=Config.GOOGLE_CLIENT_ID,
                 redirect_uri=Config.REDIRECT_URI
             )
 
@@ -39,7 +39,7 @@ class OAuthService:
             token = client.fetch_token(
                 "https://oauth2.googleapis.com/token",
                 code=code,
-                client_secret=Config.CLIENT_SECRET
+                client_secret=Config.GOOGLE_CLIENT_SECRET  # ✅ fixed here
             )
 
             # Fetch user profile info
