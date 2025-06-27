@@ -1230,7 +1230,8 @@ def handle_oauth_callback():
                     )
                 if user:
                     complete_login(user)
-                    st.experimental_set_query_params()  # clear ?code=... from URL
+                    st.experimental_set_query_params()  # clear ?code= from URL
+
 
 
 
@@ -1530,10 +1531,11 @@ def analyse_images_pipeline(uploaded_files):
 
 
 def main():
-    load_css()  # Keep if you still need it
-    load_responsive_css()  # 👈 Add this line
-    handle_oauth_callback()
+    load_css()
+    load_responsive_css()
+    handle_oauth_callback()  # this MUST run first
     show_chat_ui()
+
 
 
 if __name__ == "__main__":
