@@ -85,7 +85,7 @@ class Config:
     # OAuth Configuration
     GOOGLE_CLIENT_ID = "654156985064-vt48t8gj3qod98m4toivp6975lcdojom.apps.googleusercontent.com"
     GOOGLE_CLIENT_SECRET = "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"
-    REDIRECT_URI = "https://dhanashrichatbot-xnkxs2akkodv7t5kzhrumh.streamlit.app"  # ✅ updated
+    REDIRECT_URI = "https://dhanashrichatbot-xnkxs2akkodv7t5kzhrumh.streamlit.app"
     IMAGE_API_URL = "https://ringexpert-backend.azurewebsites.net/generate-image"
     # API Configuration
     CHAT_API_URL = "https://ringexpert-backend.azurewebsites.net/ask"
@@ -236,44 +236,42 @@ class OAuthService:
     @staticmethod
     def get_google_auth_url():
         client = OAuth2Session(
-            Config.GOOGLE_CLIENT_ID,
-            Config.GOOGLE_CLIENT_SECRET,
+            client_id=Config.CLIENT_ID,  # ✅ CLIENT_ID only
             redirect_uri=Config.REDIRECT_URI
         )
-        return client.create_authorization_url(
+        auth_url, _ = client.create_authorization_url(
             "https://accounts.google.com/o/oauth2/auth",
             scope="openid email profile",
             access_type="offline",
             prompt="consent",
             state="google"
-        )[0]
+        )
+        return auth_url
 
     @staticmethod
-    def handle_google_callback(code):
-        try:
-            client = OAuth2Session(
-                Config.GOOGLE_CLIENT_ID,
-                Config.GOOGLE_CLIENT_SECRET,
-                redirect_uri=Config.REDIRECT_URI
-            )
+   def handle_google_callback(code):
+    try:
+        client = OAuth2Session(
+            Config.CLIENT_ID,  # ✅ Use CLIENT_ID
+            redirect_uri=Config.REDIRECT_URI  # ✅ Must match Google Console
+        )
 
-            token = client.fetch_token(
-                "https://oauth2.googleapis.com/token",
-                code=code,
-                redirect_uri=Config.REDIRECT_URI,
-                client_id=Config.GOOGLE_CLIENT_ID,
-                client_secret=Config.GOOGLE_CLIENT_SECRET
-            )
+        # ✅ Fetch token from Google
+        token = client.fetch_token(
+            "https://oauth2.googleapis.com/token",
+            code=code,
+            client_secret=Config.CLIENT_SECRET
+        )
 
-            user_info = client.get(
-                "https://www.googleapis.com/oauth2/v3/userinfo"
-            ).json()
-            
-            return user_info
+        # ✅ Get user info
+        user_info = client.get("https://www.googleapis.com/oauth2/v3/userinfo").json()
 
-        except Exception as e:
-            logger.error(f"OAuth callback failed: {str(e)}")
-            return None
+        return user_info
+
+    except Exception as e:
+        logger.error(f"OAuth callback failed: {str(e)}")
+        return None
+
 
 
 # --- HELPER FUNCTIONS ---
