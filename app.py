@@ -228,7 +228,7 @@ class AzureStorage:
 # Initialize storage
 storage = AzureStorage()
 
-image_storage = ImageStorage()
+# image_storage = ImageStorage()
 # --- OAUTH SERVICE ---
 
 
@@ -980,6 +980,10 @@ def show_chat_ui():
         accept_multiple_files=True,
         help="Upload up to 3 files"
     )
+
+    if uploaded_files:
+        if st.button("Analyse Image", key="analyse_image_btn"):
+            analyse_images_pipeline(uploaded_files)
 
     if prompt:
         handle_user_prompt(prompt, uploaded_files)
