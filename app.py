@@ -12,6 +12,10 @@ import logging
 import re
 import base64
 
+from image_storage import ImageStorage
+image_storage = ImageStorage()
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -241,7 +245,7 @@ class OAuthService:
     @staticmethod
     def get_google_auth_url():
         client = OAuth2Session(
-            client_id=Config.CLIENT_ID,
+            client_id=Config.GOOGLE_CLIENT_ID,
             redirect_uri=Config.REDIRECT_URI
         )
         auth_url, _ = client.create_authorization_url(
@@ -330,7 +334,6 @@ def handle_user_prompt(prompt, uploaded_files=None):
 
 
 def complete_login(user_data):
-    """Complete login process and set session state"""
     st.session_state.update({
         "logged_in": True,
         "user_id": user_data["user_id"],
@@ -344,6 +347,8 @@ def complete_login(user_data):
         "show_quick_prompts": True
     })
 
+    print("✅ Logged in as:", user_data["user_id"])  # ← ADD THIS HERE ✅
+
     # Update last login time
     try:
         user_data["last_login"] = datetime.utcnow().isoformat()
@@ -351,7 +356,10 @@ def complete_login(user_data):
     except Exception as e:
         logger.error(f"Error updating last login: {str(e)}")
 
+    st.query_params["user_id"] = user_data["user_id"]
+
     st.rerun()
+
 
 
 def logout():
@@ -657,7 +665,6 @@ def show_chat_ui():
 
     # Sidebar content
     with st.sidebar:
-        # Logo + Styles
         st.markdown("""
         <style>
             .explore-button {
@@ -668,7 +675,6 @@ def show_chat_ui():
             section[data-testid="stSidebar"] > div {
                 padding-top: 0.2rem !important;
             }
-
 
             .prompts-container {
                 margin: 60px 0 !important;
@@ -722,14 +728,13 @@ def show_chat_ui():
             }
 
             .empty-state-container {
-            text-align: center;
-            margin: 100px auto;
-            background: transparent;
-            box-shadow: none;
-            padding: 0;
-            max-width: 100%;
-       }
-
+                text-align: center;
+                margin: 100px auto;
+                background: transparent;
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
 
             .empty-state-title {
                 font-size: 24px;
@@ -797,49 +802,35 @@ def show_chat_ui():
                 }
             }
         </style>
-
         <div class="logo-container">
             <img src="https://cdn.shopify.com/s/files/1/0843/6917/8903/files/logo_in_black.png?v=1750913006"
                  class="logo-img">
         </div>
         """, unsafe_allow_html=True)
 
-        # Explore Button
-        # Show explore button ONLY when not logged in
         if not st.session_state.logged_in:
             if st.button("🔍 Explore the details of your ring", key="explore_btn", use_container_width=True):
                 st.session_state.show_auth = True
                 st.rerun()
-                st.markdown('<div class="explore-button"></div>',
-                            unsafe_allow_html=True)
 
-        # PROMPTS based on login state
         if st.session_state.logged_in:
-            st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;">
-        <strong>🧠 AI RingExpert is ready to help you!</strong>
-    </div>""", unsafe_allow_html=True)
-
-    # 🆕 Instruction line
+            st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;"><strong>🧠 AI RingExpert is ready to help you!</strong></div>""", unsafe_allow_html=True)
             st.markdown("""
-        <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
-            Let's help you to determine the following details
-        </div>
-        <hr style="margin-bottom: 20px;">
-    """, unsafe_allow_html=True)
+            <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
+                Let's help you to determine the following details
+            </div>
+            <hr style="margin-bottom: 20px;">
+            """, unsafe_allow_html=True)
 
-    # After login prompts
             for emoji, label in [
                 ("💎", "Size of Diamonds"),
                 ("🔢", "Number of Diamonds on the Ring"),
                 ("⚖️", "Quantity of Gold"),
                 ("🟡", "Gold Karat")
             ]:
-
                 if st.button(f"{emoji} {label}", key=f"user_{label[:10].lower().replace(' ', '_')}", use_container_width=True):
                     handle_user_prompt(label)
-
         else:
-            # Before login prompts
             for emoji, text in [
                 ("💍", "What is Ringsandi?"),
                 ("📍", "Studio Location?"),
@@ -851,7 +842,6 @@ def show_chat_ui():
                              help=f"Ask about {text}", use_container_width=True):
                     handle_user_prompt(text)
 
-        # USER STATUS block
         if st.session_state.logged_in:
             st.markdown(f"""
                 <div style="text-align: center;margin: 1rem 0 0.5rem; padding: 8px 0; 
@@ -876,7 +866,7 @@ def show_chat_ui():
                 st.session_state.show_auth = True
                 st.rerun()
 
-    # Main chat UI
+    # Main Chat UI CSS + Title
     st.markdown("""
     <style>
         .title-container {
@@ -918,8 +908,7 @@ def show_chat_ui():
         }
         .uploaded-file-name { margin-left: 8px; font-size: 14px; }
         .remove-file { margin-left: auto; cursor: pointer; color: #999; }
-        
-        /* Custom file uploader button */
+
         .stFileUploader > label { display: none !important; }
         .stFileUploader > button {
             min-width: 40px !important;
@@ -937,7 +926,7 @@ def show_chat_ui():
             margin: 0 !important;
             font-size: 18px !important;
         }
-        
+
         @media (max-width: 768px) {
             .title-container {
                 right: 5px !important; top: 5px !important;
@@ -952,49 +941,31 @@ def show_chat_ui():
     <div class="chat-container">
     """, unsafe_allow_html=True)
 
-    # Show empty state if no messages, otherwise show messages
+    # Chat history
     if not st.session_state.get("messages"):
-        st.markdown("""
-        <div style="text-align: center; font-size: 24px; font-weight: 600; color: #555; margin-top: 100px;">
-           What can I help with?
-        </div>
- """, unsafe_allow_html=True)
-
+        st.markdown("""<div style="text-align: center; font-size: 24px; font-weight: 600; color: #555; margin-top: 100px;">What can I help with?</div>""", unsafe_allow_html=True)
     else:
         for msg in st.session_state.get("messages", []):
             role_class = "user-message" if msg["role"] == "user" else "bot-message"
-            st.markdown(
-                f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="{role_class}">{msg["content"]}</div>', unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # close .chat-container
 
-    # File upload and chat input
+    # File upload & input
     st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
 
-    # Chat input
-    # File upload and chat input
-    st.markdown('<div class="file-upload-container">', unsafe_allow_html=True)
+    uploaded_files = None
+    if st.session_state.get("logged_in"):
+        uploaded_files = st.file_uploader("📎 Upload ring images", key="file_upload", label_visibility="collapsed", accept_multiple_files=True, help="Upload up to 3 files")
 
-    prompt = st.chat_input("Ask...", key="chat_input")
-
-    uploaded_files = st.file_uploader(
-        "📎",
-        key="file_upload",
-        label_visibility="collapsed",
-        accept_multiple_files=True,
-        help="Upload up to 3 files"
-    )
-
-    if uploaded_files:
-        if st.button("Analyse Image", key="analyse_image_btn"):
+        if uploaded_files and st.button("🔍 Analyse Images", key="analyse_image_btn"):
             analyse_images_pipeline(uploaded_files)
 
+    prompt = st.chat_input("Ask...", key="chat_input")
     if prompt:
         handle_user_prompt(prompt, uploaded_files)
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # close file-upload-container
 
     # Footer
     st.markdown("""
@@ -1006,6 +977,7 @@ def show_chat_ui():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
 
     # --- Gold Result Card ---
     if st.session_state.get('gold_result'):
@@ -1207,9 +1179,9 @@ section[data-testid="stFileUploader"] button > div {
 
 # --- OAUTH CALLBACK HANDLER ---
 def handle_oauth_callback():
-    query_params = st.experimental_get_query_params()
-    code = query_params.get("code", [None])[0]
-    state = query_params.get("state", [None])[0]
+    query_params = st.query_params  # Updated to new API
+    code = query_params.get("code")
+    state = query_params.get("state")
 
     if code and state == "google":
         user_info = OAuthService.handle_google_callback(code)
@@ -1228,9 +1200,7 @@ def handle_oauth_callback():
                     )
                 if user:
                     complete_login(user)
-                    st.experimental_set_query_params()  # clear ?code= from URL
-
-
+                    st.query_params.clear()  # or use update if needed
 
 
 def load_responsive_css():
@@ -1400,26 +1370,56 @@ def load_responsive_css():
 # --- IMAGE ANALYSIS PIPELINE ---
 def analyse_images_pipeline(uploaded_files):
     import streamlit as st
-    import requests
     import base64
+
     if not uploaded_files:
-        st.warning("Please upload at least one image to analyse.")
+        st.warning("⚠️ Please upload at least one image.")
         return
-    # Convert images to base64
+
+    # ✅ Add this block to ensure user_id is present
+    user_id = st.session_state.get("user_id")
+
+    if not user_id:
+        st.error("❌ Please log in first. Cannot upload without user ID.")
+        return
+    else:
+        st.success(f"🔐 Uploading as user ID: {user_id}")
+
+    # Continue with rest of your upload logic...
     images_b64 = []
+    user_id = str(st.session_state.user_id)
+
     for file in uploaded_files:
-        file_bytes = file.getvalue()
-        b64 = base64.b64encode(file_bytes).decode('utf-8')
-        images_b64.append(b64)
+        try:
+            file_bytes = file.getvalue()
+            filename = f"{uuid.uuid4()}_{file.name}"
+            
+            # Upload image
+            upload_success = image_storage.upload_user_image(user_id, file_bytes, filename)
+            
+            if not upload_success:
+                continue  # Skip to next file if upload failed
+                
+            # Convert to base64 for API processing
+            b64 = base64.b64encode(file_bytes).decode('utf-8')
+            images_b64.append(b64)
+            
+        except Exception as e:
+            st.error(f"Error processing {file.name}: {str(e)}")
+            continue
+
+    # Proceed to API call or whatever logic follows here
+
+    # Proceed with API logic (unchanged)
     # 1. Call first API to get diamond count
     api1_url = "https://diamond-count-analysis.centralindia.inference.ml.azure.com/score"
     api1_token = "AIk6eqLSWKnvD6mBhtLNcOQycfbUtrKXh9tzWqXbgldE5MADQavLJQQJ99BFAAAAAAAAAAAAINFRAZML4Tbb"
     headers1 = {"Authorization": f"Bearer {api1_token}"}
     body1 = {"images": images_b64}
+
     try:
         with st.spinner("Analysing image for diamond count..."):
-            resp1 = requests.post(api1_url, json=body1,
-                                  headers=headers1, timeout=60)
+            resp1 = requests.post(api1_url, json=body1, headers=headers1, timeout=60)
             resp1.raise_for_status()
             diamond_count = resp1.json().get("prediction")
             if diamond_count is None:
@@ -1429,6 +1429,9 @@ def analyse_images_pipeline(uploaded_files):
     except Exception as e:
         st.error(f"Error in first analysis API: {e}")
         return
+
+    # 🔁 Remaining logic for second and third API (unchanged in your file)
+
     # 2. Call second API with images and diamond count
     api2_url = "https://diamond-count-analysis-xdahy.centralindia.inference.ml.azure.com/score"
     api2_token = "FCcJeeKvQNBjjw8mN78So94pafwIfP9mdfamDy3B7yoKiEfURx0EJQQJ99BFAAAAAAAAAAAAINFRAZML2MOQ"
@@ -1526,13 +1529,23 @@ def analyse_images_pipeline(uploaded_files):
         return
 
 # --- MAIN APP FLOW ---
+def restore_user_id_from_url():
+    query_params = st.query_params  # Updated to new API
+    user_id = query_params.get("user_id")
+    if user_id and not st.session_state.get("user_id"):
+        st.session_state["user_id"] = user_id
+        st.session_state["logged_in"] = True  # assume logged in
+        print("🔁 Restored user_id from URL:", user_id)
+
 
 
 def main():
+    restore_user_id_from_url()  # 👈 Add this
     load_css()
     load_responsive_css()
-    handle_oauth_callback()  # this MUST run first
+    handle_oauth_callback()
     show_chat_ui()
+
 
 
 
