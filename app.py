@@ -759,16 +759,6 @@ def show_chat_ui():
                 box-shadow: 2px 2px 8px rgba(0,0,0,0.1) !important;
             }
 
-            .user-message::before {
-                content: "👤";
-                position: absolute;
-                right: -40px;
-                top: 10px;
-                font-size: 1.5rem;
-                z-index: 1;
-            }
-
-
 
             .empty-state-container {
                 text-align: center;
@@ -871,8 +861,29 @@ def show_chat_ui():
                 ("⚖️", "Quantity of Gold"),
                 ("🟡", "Gold Karat")
             ]:
-                if st.button(f"{emoji} {label}", key=f"user_{label[:10].lower().replace(' ', '_')}", use_container_width=True):
-                    handle_user_prompt(label)
+                
+                st.markdown(
+        f"""
+        <div style="
+            width: 100%;
+            padding: 10px 15px;
+            margin: 6px 0;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f5f5f5;
+            text-align: left;
+            transition: all 0.2s ease;
+        ">
+            {emoji} {label}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+             
+            
+
         else:
             for emoji, text in [
                 ("💍", "What is Ringsandi?"),
@@ -1171,7 +1182,8 @@ section[data-testid="stFileUploader"] button > div {
         position: relative;
     }
 
-  
+
+
     [data-testid="stSidebar"] {
         background-color: var(--light) !important;
         border-right: 1px solid rgba(0, 0, 0, 0.1);
@@ -1218,7 +1230,52 @@ section[data-testid="stFileUploader"] button > div {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+                
+    /* FORCE LIGHT THEME REGARDLESS OF USER DEVICE SETTINGS */
+
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* Prevent any automatic inversion */
+    html {
+        color-scheme: light !important;
+        --primary-color: #000000;
+        --background-color: #ffffff;
+    }
+
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .stApp {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* Fix buttons and input fields */
+    input, textarea, button {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border-color: #ccc !important;
+    }
+
+    /* Override dark mode styles on Android/iOS devices */
+    @media (prefers-color-scheme: dark) {
+        html, body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .stApp {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+    }
     </style>
+
     """, unsafe_allow_html=True)
 
 
