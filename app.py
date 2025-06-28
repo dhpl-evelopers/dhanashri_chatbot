@@ -325,17 +325,27 @@ def handle_user_prompt(prompt, uploaded_files=None):
             image_bytes = file.read()
             b64_image = base64.b64encode(image_bytes).decode("utf-8")
             img_html = f'<img src="data:{file.type};base64,{b64_image}" width="150"/>'
-            st.session_state.messages.append(
-                {"role": "user", "content": img_html})
+            st.session_state.messages.append({"role": "user", "content": img_html})
 
-    # [YOUR EXISTING LOGIC FOR IMAGE/CHAT API]
+    # ✅ Call chatbot backend with the user's prompt
+    try:
+        with st.spinner("Getting response..."):
+            resp = requests.post(Config.CHAT_API_URL, json={"question": prompt})
+            resp.raise_for_status()
+            answer = resp.json().get("answer", "Sorry, I didn’t understand that.")
+    except Exception as e:
+        answer = f"Error reaching AI backend: {e}"
 
+    # Append bot reply
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+
+    # Save to storage
     if st.session_state.logged_in:
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
 
-    # ✅ Clear uploaded list after sending
     st.session_state.uploaded_file_list.clear()
     st.rerun()
+
 
 
 def complete_login(user_data):
