@@ -36,6 +36,13 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
+st.markdown("""
+    <style>
+    [data-testid="collapsedControl"] {
+        display: block !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Apply CSS fix to all input components
 st.markdown("""
