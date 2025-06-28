@@ -40,9 +40,25 @@ st.markdown("""
     <style>
     [data-testid="collapsedControl"] {
         display: block !important;
+        position: fixed !important;
+        top: 10px;
+        left: 10px;
+        z-index: 1003;
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+    }
+
+    @media (max-width: 768px) {
+        [data-testid="collapsedControl"] {
+            top: 12px;
+            left: 12px;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
+
 
 # Apply CSS fix to all input components
 st.markdown("""
