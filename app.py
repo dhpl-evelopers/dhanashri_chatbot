@@ -38,26 +38,38 @@ st.set_page_config(
 )
 st.markdown("""
     <style>
-    [data-testid="collapsedControl"] {
-        display: block !important;
-        position: fixed !important;
-        top: 10px;
-        left: 10px;
-        z-index: 1003;
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 4px;
-    }
-
-    @media (max-width: 768px) {
-        [data-testid="collapsedControl"] {
-            top: 12px;
-            left: 12px;
+        #custom-sidebar-toggle {
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 9999;
+            font-size: 24px;
+            background-color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-    }
     </style>
+    <div id="custom-sidebar-toggle">☰</div>
+    <script>
+        setTimeout(function () {
+            const customToggle = window.document.getElementById("custom-sidebar-toggle");
+            const stToggle = window.document.querySelector('[data-testid="collapsedControl"]');
+
+            if (customToggle && stToggle) {
+                customToggle.addEventListener("click", function () {
+                    stToggle.click();
+                });
+            }
+        }, 1000);
+    </script>
 """, unsafe_allow_html=True)
+
+
+
+
 
 
 # Apply CSS fix to all input components
