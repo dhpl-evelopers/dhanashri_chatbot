@@ -1540,14 +1540,11 @@ def restore_user_id_from_url():
 
 
 def main():
-    restore_user_id_from_url()  # 👈 Add this
+    handle_oauth_callback()  # Move this to be FIRST
+    restore_user_id_from_url()
     load_css()
     load_responsive_css()
-    handle_oauth_callback()
     show_chat_ui()
-
-
-
 
 if __name__ == "__main__":
     main()
