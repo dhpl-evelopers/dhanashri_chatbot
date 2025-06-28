@@ -344,7 +344,7 @@ def handle_user_prompt(prompt, uploaded_files=None):
         storage.save_chat(st.session_state.user_id, st.session_state.messages)
 
     st.session_state.uploaded_file_list.clear()
-    st.rerun()
+
 
 
 
