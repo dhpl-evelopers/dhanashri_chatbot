@@ -1200,7 +1200,7 @@ def handle_oauth_callback():
                     )
                 if user:
                     complete_login(user)
-                    st.query_params.clear()  # or use update if needed
+                    st.query_params.update({"code": None, "state": None}) # or use update if needed
 
 
 def load_responsive_css():
