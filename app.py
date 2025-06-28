@@ -1169,13 +1169,14 @@ def load_css():
         background-color: #f8f9fa !important;
         border-radius: 18px 18px 4px 18px !important;
         margin-left: auto !important;
+        color: #000 !important;
     }
 
     .bot-message {
         background-color: white !important;
         border-radius: 18px 18px 18px 4px !important;
         margin-right: auto !important;
-        position: relative;
+        color: #000 !important;
     }
 
     [data-testid="stSidebar"] {
@@ -1253,38 +1254,55 @@ def load_css():
         color: #000000;
     }
 
+    ::placeholder {
+        color: #999 !important;
+        opacity: 1 !important;
+    }
+
     /* ---------------------------
        Dark Theme (auto-detect)
     --------------------------- */
     @media (prefers-color-scheme: dark) {
         html, body, .stApp {
-            background-color: #121212;
-            color: #ffffff;
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
         }
 
         .user-message {
-            background-color: #1e1e1e;
-            color: #ffffff;
+            background-color: #2c2c2c !important;
+            color: #ffffff !important;
         }
 
         .bot-message {
-            background-color: #2a2a2a;
-            color: #ffffff;
+            background-color: #3a3a3a !important;
+            color: #ffffff !important;
         }
 
         input, textarea, button {
-            background-color: #333333;
-            color: #ffffff;
-            border-color: #555555;
+            background-color: #2a2a2a !important;
+            color: #ffffff !important;
+            border-color: #555555 !important;
+        }
+
+        ::placeholder {
+            color: #bbbbbb !important;
+            opacity: 1 !important;
         }
 
         .footer-container {
-            background-color: #1e1e1e;
-            color: #ffffff;
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+        }
+
+        .stButton button[kind="secondary"],
+        .stButton button[kind="primary"] {
+            background-color: #444 !important;
+            color: #fff !important;
         }
     }
     </style>
     """, unsafe_allow_html=True)
+
 
 
 
