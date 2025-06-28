@@ -581,10 +581,11 @@ def show_login_form():
 
         google_auth_url = OAuthService.get_google_auth_url()
         st.markdown(
-            f'<a href="{google_auth_url}" class="google-btn" target="_self">'
-            f'<img src="{Config.GOOGLE_LOGO_URL}" class="google-logo">Sign in with Google</a>',
-            unsafe_allow_html=True
+             f'<a href="{google_auth_url}" class="google-btn" target="_blank" rel="noopener noreferrer">'
+             f'<img src="{Config.GOOGLE_LOGO_URL}" class="google-logo">Sign in with Google</a>',
+             unsafe_allow_html=True
         )
+
 
 
 def show_register_form():
