@@ -243,19 +243,24 @@ logger = logging.getLogger(__name__)
 
 class OAuthService:
     @staticmethod
+   @staticmethod
     def get_google_auth_url():
+    try:
         client = OAuth2Session(
             client_id=Config.GOOGLE_CLIENT_ID,
-            redirect_uri=Config.REDIRECT_URI
+            redirect_uri=Config.REDIRECT_URI,
+            scope="openid email profile"
         )
         auth_url, _ = client.create_authorization_url(
             "https://accounts.google.com/o/oauth2/auth",
-            scope="openid email profile",
             access_type="offline",
-            prompt="consent",
+            prompt="select_account",
             state="google"
         )
         return auth_url
+    except Exception as e:
+        logger.error(f"Error generating Google auth URL: {str(e)}")
+        return None
 
     @staticmethod
     def handle_google_callback(code):
@@ -1179,28 +1184,38 @@ section[data-testid="stFileUploader"] button > div {
 
 # --- OAUTH CALLBACK HANDLER ---
 def handle_oauth_callback():
-    query_params = st.query_params  # Updated to new API
+    query_params = st.query_params
     code = query_params.get("code")
     state = query_params.get("state")
+    error = query_params.get("error")
+
+    if error:
+        st.error(f"OAuth error: {error}")
+        return
 
     if code and state == "google":
-        user_info = OAuthService.handle_google_callback(code)
-        if user_info:
-            email = user_info.get("email")
-            if email:
-                user = storage.get_user(email)
-                if not user:
-                    user = storage.create_user(
-                        email=email,
-                        provider="google",
-                        username=email.split('@')[0],
-                        full_name=user_info.get("name", ""),
-                        first_name=user_info.get("given_name", ""),
-                        last_name=user_info.get("family_name", "")
-                    )
-                if user:
-                    complete_login(user)
-                    st.query_params.update({"code": None, "state": None}) # or use update if needed
+        try:
+            user_info = OAuthService.handle_google_callback(code)
+            if user_info:
+                email = user_info.get("email")
+                if email:
+                    user = storage.get_user(email)
+                    if not user:
+                        user = storage.create_user(
+                            email=email,
+                            provider="google",
+                            username=email.split('@')[0],
+                            full_name=user_info.get("name", ""),
+                            first_name=user_info.get("given_name", ""),
+                            last_name=user_info.get("family_name", "")
+                        )
+                    if user:
+                        complete_login(user)
+                        # Clear the code from URL to prevent re-processing
+                        st.query_params.clear()
+        except Exception as e:
+            st.error(f"Authentication failed: {str(e)}")
+            logger.error(f"OAuth callback error: {str(e)}")
 
 
 def load_responsive_css():
