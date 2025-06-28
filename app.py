@@ -988,25 +988,34 @@ def show_chat_ui():
         except Exception:
             diamond_weight_val = gold_result.get('diamond_weight', '-')
         st.markdown(f"""
-            <div style='background: linear-gradient(120deg, #fffbe6 0%, #f8f9fa 100%); border: 2px solid #ffe066; border-radius: 22px; padding: 36px 32px 24px 32px; margin-bottom: 32px; box-shadow: 0 4px 24px rgba(212,175,55,0.10); max-width: 600px; margin-left: auto; margin-right: auto;'>
-                <div style='display: flex; align-items: center; justify-content: center; margin-bottom: 18px;'>
-                    <span style='font-size: 2.5rem; margin-right: 12px;'>💍</span>
-                    <span style='font-size: 2.1rem; font-weight: 800; color: #bfa14a; letter-spacing: 1px;'>Ring Analysis Summary</span>
+            <div style='
+                background: #fff;
+                border: 1px solid #e0e0e0;
+                border-radius: 14px;
+                padding: 32px 28px 20px 28px;
+                margin-bottom: 32px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            '>
+                <div style='text-align: center; margin-bottom: 18px;'>
+                    <span style='font-size: 1.7rem; font-weight: 700; color: #222; letter-spacing: 0.5px;'>Ring Analysis Summary</span>
                 </div>
-                <hr style='margin: 10px 0 24px 0; border: none; border-top: 2px solid #ffe066;'/>
+                <hr style='margin: 10px 0 24px 0; border: none; border-top: 1px solid #e0e0e0;'/>
                 <div style='display: flex; flex-wrap: wrap; gap: 0 32px;'>
                     <div style='flex: 1 1 220px;'>
-                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>🖼️ Images Processed:</b> {gold_result.get('images_processed', '-')}</div>
-                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>💎 Total Diamonds:</b> {gold_result.get('total_diamonds', '-')}</div>
-                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>💠 Total Carat Weight:</b> {diamond_weight_val}</div>
+                        <div style='font-size:16px; margin-bottom:10px; color:#222;'><b>Images Processed:</b> {gold_result.get('images_processed', '-')}</div>
+                        <div style='font-size:16px; margin-bottom:10px; color:#222;'><b>Total Diamonds:</b> {gold_result.get('total_diamonds', '-')}</div>
+                        <div style='font-size:16px; margin-bottom:10px; color:#222;'><b>Total Diamond Carat Weight:</b> {diamond_weight_val}</div>
                     </div>
                     <div style='flex: 1 1 220px;'>
-                        <div style='font-size:17px; margin-bottom:10px; color:#222;'><b>📏 Ring Size:</b> {gold_result.get('ring_size', '-')}</div>
+                        <div style='font-size:16px; margin-bottom:10px; color:#222;'><b>Ring Size:</b> {gold_result.get('ring_size', '-')}</div>
                     </div>
                 </div>
-                <div style='background: linear-gradient(90deg, #fffbe6 0%, #ffe066 100%); border-radius:14px; padding: 22px 0 18px 0; margin:28px 0 0 0; box-shadow: 0 2px 8px rgba(212,175,55,0.07); text-align:center;'>
-                    <span style='font-size:24px; color:#228be6; font-weight:800;'>18K Gold:</span> <span style='font-size:24px; color:#222; font-weight:700;'>{gold_result.get('gold_18k', '-')} grams</span><br/>
-                    <span style='font-size:24px; color:#bfa14a; font-weight:800;'>14K Gold:</span> <span style='font-size:24px; color:#222; font-weight:700;'>{gold_result.get('gold_14k', '-')} grams</span>
+                <div style='background: #f5f5f5; border-radius:10px; padding: 16px 0 12px 0; margin:24px 0 0 0; text-align:center;'>
+                    <span style='font-size:18px; font-weight:700; color:#222;'>18K Gold:</span> <span style='font-size:18px; color:#222; font-weight:500;'>{gold_result.get('gold_18k', '-')} grams</span><br/>
+                    <span style='font-size:18px; font-weight:700; color:#222;'>14K Gold:</span> <span style='font-size:18px; color:#222; font-weight:500;'>{gold_result.get('gold_14k', '-')} grams</span>
                 </div>
             </div>
         """, unsafe_allow_html=True)
