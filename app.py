@@ -36,6 +36,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
     menu_items=None
 )
+
 st.markdown("""
     <style>
         #custom-sidebar-toggle {
@@ -54,23 +55,21 @@ st.markdown("""
     </style>
     <div id="custom-sidebar-toggle">☰</div>
     <script>
-        setTimeout(function () {
+        setTimeout(() => {
             const customToggle = window.document.getElementById("custom-sidebar-toggle");
-            const stToggle = window.document.querySelector('[data-testid="collapsedControl"]');
+            const sidebarToggle = window.parent.document.querySelector('[data-testid="collapsedControl"]'); // Assuming this is correct
 
-            if (customToggle && stToggle) {
-                customToggle.addEventListener("click", function () {
-                    stToggle.click();
-                });
+            if (customToggle && sidebarToggle) {
+                customToggle.onclick = () => {
+                    sidebarToggle.click();
+                    console.log("Custom toggle clicked, sidebar toggle simulated."); // For debugging
+                };
+            } else {
+                console.log("Custom toggle or sidebar toggle not found after delay."); // For debugging
             }
-        }, 1000);
+        }, 3000); // Increased delay
     </script>
 """, unsafe_allow_html=True)
-
-
-
-
-
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -769,14 +768,7 @@ def show_chat_ui():
                 z-index: 1;
             }
 
-            .bot-message::before {
-                content: "💎";
-                position: absolute;
-                left: -40px;
-                top: 10px;
-                font-size: 1.5rem;
-                z-index: 1;
-            }
+
 
             .empty-state-container {
                 text-align: center;
@@ -1179,14 +1171,7 @@ section[data-testid="stFileUploader"] button > div {
         position: relative;
     }
 
-    .bot-message::before {
-        content: "💎";
-        position: absolute;
-        left: -40px;
-        top: 10px;
-        font-size: 1.5rem;
-    }
-
+  
     [data-testid="stSidebar"] {
         background-color: var(--light) !important;
         border-right: 1px solid rgba(0, 0, 0, 0.1);
