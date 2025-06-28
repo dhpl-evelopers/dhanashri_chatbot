@@ -1083,7 +1083,6 @@ def show_chat_ui():
 
 # --- CSS STYLING ---
 
-
 def load_css():
     import streamlit as st
     st.markdown("""
@@ -1099,11 +1098,12 @@ def load_css():
         --prompt-hover: #E0E0E0;
         --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
-input:focus, textarea:focus {
-    outline: none !important;
-    box-shadow: none !important;
-    border: 1px solid #ccc !important;
-}
+
+    input:focus, textarea:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
 
     [data-testid="stChatInput"] {
         width: 100% !important;
@@ -1120,51 +1120,47 @@ input:focus, textarea:focus {
         box-shadow: var(--shadow) !important;
     }
 
-   [data-testid="stChatInput"] .stTextInput input:focus {
-    border-color: #ccc !important;
-    box-shadow: none !important;
-    outline: none !important;
-}
+    [data-testid="stChatInput"] .stTextInput input:focus {
+        border-color: #ccc !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
 
-
-    /* Hide uploader label and text */
     section[data-testid="stFileUploader"] label,
-section[data-testid="stFileUploader"] div span {
-    display: none !important;
-}
+    section[data-testid="stFileUploader"] div span {
+        display: none !important;
+    }
 
-section[data-testid="stFileUploader"] button {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    border: 1px solid #ccc !important;
-    background-color: #fff !important;
-    padding: 0 !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    position: relative;
-}
+    section[data-testid="stFileUploader"] button {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 50% !important;
+        border: 1px solid #ccc !important;
+        background-color: #fff !important;
+        padding: 0 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
 
-    /* Paperclip Icon */
     section[data-testid="stFileUploader"] button::after {
-    content: "📎";
-    font-size: 20px;
-    color: #333;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
+        content: "📎";
+        font-size: 20px;
+        color: #333;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 
-section[data-testid="stFileUploader"] button > div {
-    display: none !important;
-}
+    section[data-testid="stFileUploader"] button > div {
+        display: none !important;
+    }
 
-    /* Chat bubbles */
     .user-message, .bot-message {
         padding: 12px 16px !important;
         max-width: 80% !important;
-        border: 1px solid rgba(0,0,0,0.1) !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
         margin-bottom: 12px !important;
         animation: fadeIn 0.3s ease-out;
     }
@@ -1181,8 +1177,6 @@ section[data-testid="stFileUploader"] button > div {
         margin-right: auto !important;
         position: relative;
     }
-
-
 
     [data-testid="stSidebar"] {
         background-color: var(--light) !important;
@@ -1220,7 +1214,6 @@ section[data-testid="stFileUploader"] button > div {
         .user-message, .bot-message {
             max-width: 90% !important;
         }
-
         .bot-message::before {
             left: -30px !important;
         }
@@ -1230,53 +1223,69 @@ section[data-testid="stFileUploader"] button > div {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-                
-    /* FORCE LIGHT THEME REGARDLESS OF USER DEVICE SETTINGS */
 
-    html, body, [data-testid="stAppViewContainer"] {
-        background-color: #ffffff !important;
-        color: #000000 !important;
+    /* ---------------------------
+       Light Theme (default)
+    --------------------------- */
+    html, body, .stApp {
+        background-color: #ffffff;
+        color: #000000;
     }
 
-    /* Prevent any automatic inversion */
-    html {
-        color-scheme: light !important;
-        --primary-color: #000000;
-        --background-color: #ffffff;
+    .user-message {
+        background-color: #f8f9fa;
+        color: #000000;
     }
 
-    body {
-        background: #ffffff !important;
-        color: #000000 !important;
+    .bot-message {
+        background-color: #ffffff;
+        color: #000000;
     }
 
-    .stApp {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-
-    /* Fix buttons and input fields */
     input, textarea, button {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-color: #ccc !important;
+        background-color: #ffffff;
+        color: #000000;
+        border-color: #ccc;
     }
 
-    /* Override dark mode styles on Android/iOS devices */
+    .footer-container {
+        background-color: #ffffff;
+        color: #000000;
+    }
+
+    /* ---------------------------
+       Dark Theme (auto-detect)
+    --------------------------- */
     @media (prefers-color-scheme: dark) {
-        html, body {
-            background-color: #ffffff !important;
-            color: #000000 !important;
+        html, body, .stApp {
+            background-color: #121212;
+            color: #ffffff;
         }
 
-        .stApp {
-            background-color: #ffffff !important;
-            color: #000000 !important;
+        .user-message {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+
+        .bot-message {
+            background-color: #2a2a2a;
+            color: #ffffff;
+        }
+
+        input, textarea, button {
+            background-color: #333333;
+            color: #ffffff;
+            border-color: #555555;
+        }
+
+        .footer-container {
+            background-color: #1e1e1e;
+            color: #ffffff;
         }
     }
     </style>
-
     """, unsafe_allow_html=True)
+
 
 
 # --- OAUTH CALLBACK HANDLER ---
