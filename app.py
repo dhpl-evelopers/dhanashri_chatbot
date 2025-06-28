@@ -19,6 +19,14 @@ image_storage = ImageStorage()
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .st-emotion-cache-1avcm0n {display: none !important;}  /* for newer Streamlit versions */
+    </style>
+""", unsafe_allow_html=True)
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
