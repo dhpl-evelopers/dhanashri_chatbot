@@ -1662,6 +1662,16 @@ def main():
     # ✅ Ensure sidebar toggle button appears
     st.markdown("""<style>[data-testid="collapsedControl"] { display: block !important; }</style>""", unsafe_allow_html=True)
 
+    # 🔒 Hide top-right Fork, GitHub, and menu
+    st.markdown("""
+        <style>
+        header, footer {visibility: hidden;}
+        [data-testid="stToolbar"], [data-testid="stDecoration"], .st-emotion-cache-18ni7ap {
+            display: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     show_chat_ui()
 
 if __name__ == "__main__":
