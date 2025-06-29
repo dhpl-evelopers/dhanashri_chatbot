@@ -695,16 +695,16 @@ def show_chat_ui():
 <script>
 setTimeout(() => {
     const customToggle = window.document.getElementById("custom-sidebar-toggle");
-    const sidebarToggle = window.parent.document.querySelector('[data-testid="collapsedControl"]');
+    const sidebarToggle = window.document.querySelector('[data-testid="collapsedControl"]');
 
     if (customToggle && sidebarToggle) {
         customToggle.onclick = () => {
-            sidebarToggle.click();  // simulate native sidebar reopen
+            sidebarToggle.click();  // ✅ trigger native reopen
         };
     } else {
-        console.log("Sidebar toggle element not found");
+        console.log("❌ Sidebar toggle element not found");
     }
-}, 1000);  // delay to ensure Streamlit renders the button
+}, 1000);
 </script>
 """, unsafe_allow_html=True)
 
