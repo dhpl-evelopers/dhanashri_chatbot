@@ -37,39 +37,7 @@ st.set_page_config(
     menu_items=None
 )
 
-st.markdown("""
-    <style>
-        #custom-sidebar-toggle {
-            position: fixed;
-            top: 14px;
-            left: 14px;
-            z-index: 9999;
-            font-size: 24px;
-            background-color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-    <div id="custom-sidebar-toggle">☰</div>
-    <script>
-        setTimeout(() => {
-            const customToggle = window.document.getElementById("custom-sidebar-toggle");
-            const sidebarToggle = window.parent.document.querySelector('[data-testid="collapsedControl"]'); // Assuming this is correct
 
-            if (customToggle && sidebarToggle) {
-                customToggle.onclick = () => {
-                    sidebarToggle.click();
-                    console.log("Custom toggle clicked, sidebar toggle simulated."); // For debugging
-                };
-            } else {
-                console.log("Custom toggle or sidebar toggle not found after delay."); // For debugging
-            }
-        }, 3000); // Increased delay
-    </script>
-""", unsafe_allow_html=True)
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -78,15 +46,6 @@ st.markdown("""
     div[data-baseweb="input"] {
         border: none !important;
         box-shadow: none !important;
-    }
-
-    /* Style the actual input field */
-    input, textarea {
-        border: 1px solid #ccc !important;
-        border-radius: 6px !important;
-        box-shadow: none !important;
-        padding: 0.5rem !important;
-        background-color: #f8f9fa !important;
     }
 
     input:focus, textarea:focus {
@@ -426,15 +385,15 @@ def logout():
         "username": None,
         "full_name": None,
         "oauth_provider": None,
-        "show_auth": False,
-        "temp_user": True,  # Reset to guest user
+        "show_auth": True,  # <-- ✅ Force show login screen after logout
+        "temp_user": True,
         "show_quick_prompts": True,
         "uploaded_file": None
     })
 
-    # Restore messages for guest users
     st.session_state.messages = temp_messages
     st.rerun()
+
 
 # --- AUTHENTICATION UI ---
 
@@ -713,132 +672,60 @@ def show_chat_ui():
         show_auth_ui()
         return
 
+    # Add persistent sidebar toggle button - FIXED VERSION
+    st.markdown("""
+        <style>
+            #sidebarToggle {
+                position: fixed;
+                top: 14px;
+                left: 14px;
+                z-index: 10000;
+                font-size: 22px;
+                padding: 6px 12px;
+                background-color: white;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                cursor: pointer;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            [data-testid="back_to_start"] button {
+                background-color: #1c1b18;
+                color: white;
+                font-size: 16px;
+                font-weight: 500;
+                border-radius: 10px;
+                padding: 10px 24px;
+            }
+        </style>
+
+        <div id="sidebarToggle">☰</div>
+
+        <script>
+            setTimeout(function() {
+                const toggleButton = document.getElementById("sidebarToggle");
+                toggleButton.addEventListener("click", function () {
+                    const sidebarToggle = window.document.querySelector('[data-testid="collapsedControl"]');
+                    if (sidebarToggle) {
+                        sidebarToggle.click();
+                    } else {
+                        console.log("Sidebar toggle button not found.");
+                    }
+                });
+            }, 1000);
+        </script>
+    """, unsafe_allow_html=True)
+
     # Sidebar content
     with st.sidebar:
         st.markdown("""
-        <style>
-            .explore-button {
-                margin-top: 20px;
-                margin-bottom: 30px;
-            }
-
-            section[data-testid="stSidebar"] > div {
-                padding-top: 0.2rem !important;
-            }
-
-            .prompts-container {
-                margin: 60px 0 !important;
-            }
-
-            .prompt-title {
-                font-size: 18px;
-                font-weight: 700;
-                color: #333;
-                margin: 8px 0 10px 0;
-                letter-spacing: 0.5px;
-                text-transform: uppercase;
-                border-bottom: 1px solid #e0e0e0;
-                padding-bottom: 8px;
-            }
-
-            .prompt-btn {
-                width: 100%;
-                text-align: left;
-                padding: 10px 15px !important;
-                margin: 6px 0 !important;
-                border-radius: 8px !important;
-                font-weight: 600 !important;
-                font-size: 13px !important;
-                transition: all 0.2s ease !important;
-                border: 1px solid #e0e0e0 !important;
-            }
-
-            .prompt-btn:hover {
-                background-color: #f5f5f5 !important;
-                transform: translateX(3px) !important;
-                box-shadow: 2px 2px 8px rgba(0,0,0,0.1) !important;
-            }
-
-
-            .empty-state-container {
-                text-align: center;
-                margin: 100px auto;
-                background: transparent;
-                box-shadow: none;
-                padding: 0;
-                max-width: 100%;
-            }
-
-            .empty-state-title {
-                font-size: 24px;
-                font-weight: 600;
-                color: #555;
-                margin-top: 20px;
-            }
-
-            .welcome-title {
-                font-size: 32px;
-                font-weight: 800;
-                color: #000;
-                margin-bottom: 10px;
-            }
-
-            .logo-container {
-                text-align: center;
-                padding: 0 !important;
-                margin: 0 !important;
-                position: relative;
-                top: 0 !important;
-            }
-
-            .logo-img {
-                width: 80px !important;
-                height: auto !important;
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            @media (max-width: 520px) {
-                .prompt-btn {
-                    padding: 6px 10px !important;
-                    font-size: 13px !important;
-                    margin: 4px 0 !important;
-                }
-
-                .logo-container {
-                    padding: 4px 0 !important;
-                }
-
-                .logo-img {
-                    width: 60px !important;
-                }
-
-                .stButton {
-                    margin-bottom: 4px !important;
-                }
-
-                div[data-testid="stVerticalBlock"] {
-                    gap: 4px !important;
-                }
-
-                section[data-testid="stSidebar"] > div {
-                    overflow: hidden !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    justify-content: space-between !important;
-                    height: 100% !important;
-                }
-
-                section[data-testid="stSidebar"] {
-                    overflow: hidden !important;
-                }
-            }
-        </style>
-        <div class="logo-container">
-            <img src="https://cdn.shopify.com/s/files/1/0843/6917/8903/files/logo_in_black.png?v=1750913006"
-                 class="logo-img">
-        </div>
+            <div class="logo-container">
+                <img src="https://cdn.shopify.com/s/files/1/0843/6917/8903/files/logo_in_black.png?v=1750913006"
+                     class="logo-img">
+            </div>
         """, unsafe_allow_html=True)
 
         if not st.session_state.logged_in:
@@ -849,10 +736,10 @@ def show_chat_ui():
         if st.session_state.logged_in:
             st.markdown("""<div style="margin-top: 20px; margin-bottom: 10px;"><strong>🧠 AI RingExpert is ready to help you!</strong></div>""", unsafe_allow_html=True)
             st.markdown("""
-            <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
-                Let's help you to determine the following details
-            </div>
-            <hr style="margin-bottom: 20px;">
+                <div style="font-size: 15px; color: #333; font-weight: 500; text-align: center; margin: 10px 0 20px;">
+                    Let's help you to determine the following details
+                </div>
+                <hr style="margin-bottom: 20px;">
             """, unsafe_allow_html=True)
 
             for emoji, label in [
@@ -861,29 +748,25 @@ def show_chat_ui():
                 ("⚖️", "Quantity of Gold"),
                 ("🟡", "Gold Karat")
             ]:
-                
                 st.markdown(
-        f"""
-        <div style="
-            width: 100%;
-            padding: 10px 15px;
-            margin: 6px 0;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background-color: #f5f5f5;
-            text-align: left;
-            transition: all 0.2s ease;
-        ">
-            {emoji} {label}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-             
-            
-
+                    f"""
+                    <div style="
+                        width: 100%;
+                        padding: 10px 15px;
+                        margin: 6px 0;
+                        font-size: 13px;
+                        font-weight: 600;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 8px;
+                        background-color: #f5f5f5;
+                        text-align: left;
+                        transition: all 0.2s ease;
+                    ">
+                        {emoji} {label}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
         else:
             for emoji, text in [
                 ("💍", "What is Ringsandi?"),
@@ -898,27 +781,73 @@ def show_chat_ui():
 
         if st.session_state.logged_in:
             st.markdown(f"""
-                <div style="text-align: center;margin: 1rem 0 0.5rem; padding: 8px 0; 
+                <div style="text-align: center; margin: 1rem 0 0.5rem; padding: 8px 0; 
                 background: #e8f5e9; border-radius: 8px;">
-                    <div style="font-weight: 600; color: #2e7d32;">
+                    <div style="font-weight: 600; color: #000;">
                         {st.session_state.full_name or st.session_state.username}
                     </div>
-                    <div style="font-size: 12px; color: #4caf50;">You're logged in</div>
+                    <div style="font-size: 12px; color: #000;">You're logged in</div>
                 </div>
             """, unsafe_allow_html=True)
+
             if st.button("Logout", key="sidebar_logout_btn", type="primary", use_container_width=True):
                 logout()
         else:
             st.markdown("""
                 <div style="text-align: center; margin: 0.1rem 0 0.1rem; padding: 4px 0;
-                     background: #f5f5f5; border-radius: 8px;">
-               <div style="font-weight: 600; color: #333;">Guest User</div>
-                 <div style="font-size: 12px; color: #777;">History not saved</div>
+                background: #f5f5f5; border-radius: 8px;">
+                    <div style="font-weight: 600; color: #333;">Guest User</div>
+                    <div style="font-size: 12px; color: #777;">History not saved</div>
                 </div>
             """, unsafe_allow_html=True)
+
             if st.button("Login / Sign Up", key="sidebar_login_btn_sidebar", type="primary", use_container_width=True):
                 st.session_state.show_auth = True
                 st.rerun()
+
+    # ✅ Apply custom style to the existing Back button (outside the sidebar)
+    st.markdown("""
+        <style>
+            div.stButton > button[aria-label="Back"] {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                background-color: #1c1b18 !important;
+                color: white !important;
+                padding: 10px 28px !important;
+                font-size: 18px !important;
+                font-family: 'Georgia', serif !important;
+                font-weight: 400 !important;
+                border-radius: 14px !important;
+                border: none !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+                z-index: 1001;
+            }
+
+            div.stButton > button[aria-label="Back"]:hover {
+                background-color: #2e2d2a !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+
+    # ✅ Add BACK BUTTON after sidebar (outside the sidebar block)
+    if st.session_state.get("logged_in"):
+        col1, col2 = st.columns([1, 8])
+        with col1:
+            if st.button("Back", key="back_to_guest", help="Return to guest view"):
+                st.session_state.logged_in = False
+                st.session_state.temp_user = True
+                st.session_state.show_auth = False
+                st.session_state.username = None
+                st.session_state.full_name = None
+                st.session_state.oauth_provider = None
+                st.session_state.messages = []  # ✅ Clear previous chat messages
+                st.session_state.gold_result = None  # Optional: clear analysis result
+                st.rerun()
+
+
+
 
     # Main Chat UI CSS + Title
     st.markdown("""
@@ -1081,10 +1010,39 @@ def show_chat_ui():
             st.session_state['show_gold_modal'] = False
             st.rerun()
 
+    
+
 # --- CSS STYLING ---
+
 
 def load_css():
     import streamlit as st
+
+    # Force light mode override
+    st.markdown("""
+    <style>
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+        background-color: white !important;
+        color: black !important;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #f8f9fa !important;
+        color: black !important;
+    }
+    [data-testid="stChatInput"] input {
+        background-color: white !important;
+        color: black !important;
+    }
+    @media (prefers-color-scheme: dark) {
+        html, body {
+            background-color: white !important;
+            color: black !important;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Custom styling for variables, chat, inputs, and layout
     st.markdown("""
     <style>
     :root {
@@ -1112,18 +1070,28 @@ def load_css():
     }
 
     [data-testid="stChatInput"] .stTextInput input {
+        width: 100% !important;
         border-radius: 32px !important;
-        padding: 22px 30px !important;
-        font-size: 20px !important;
-        min-height: 70px !important;
-        border: 1px solid #ccc !important;
-        box-shadow: var(--shadow) !important;
+        padding: 20px 28px !important;
+        font-size: 18px !important;
+        min-height: 60px !important;
+        background-color: #fff !important;
+        box-shadow: none !important;
+        outline: none !important;
+        background-clip: padding-box !important;
+        appearance: none !important;
+        transition: all 0.2s ease-in-out;
     }
 
     [data-testid="stChatInput"] .stTextInput input:focus {
-        border-color: #ccc !important;
+        border: 1px solid #999 !important;
         box-shadow: none !important;
         outline: none !important;
+    }
+
+    input:-webkit-autofill {
+        box-shadow: 0 0 0 1000px #fff inset !important;
+        border-radius: 32px !important;
     }
 
     section[data-testid="stFileUploader"] label,
@@ -1138,7 +1106,7 @@ def load_css():
         border: 1px solid #ccc !important;
         background-color: #fff !important;
         padding: 0 !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         position: relative;
     }
 
@@ -1159,8 +1127,8 @@ def load_css():
     .user-message, .bot-message {
         padding: 12px 16px !important;
         max-width: 80% !important;
-        border: 1px solid rgba(0, 0, 0, 0.1) !important;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
         margin-bottom: 12px !important;
         animation: fadeIn 0.3s ease-out;
     }
@@ -1169,14 +1137,13 @@ def load_css():
         background-color: #f8f9fa !important;
         border-radius: 18px 18px 4px 18px !important;
         margin-left: auto !important;
-        color: #000 !important;
     }
 
     .bot-message {
         background-color: white !important;
         border-radius: 18px 18px 18px 4px !important;
         margin-right: auto !important;
-        color: #000 !important;
+        position: relative;
     }
 
     [data-testid="stSidebar"] {
@@ -1215,6 +1182,7 @@ def load_css():
         .user-message, .bot-message {
             max-width: 90% !important;
         }
+
         .bot-message::before {
             left: -30px !important;
         }
@@ -1225,84 +1193,30 @@ def load_css():
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ---------------------------
-       Light Theme (default)
-    --------------------------- */
-    html, body, .stApp {
-        background-color: #ffffff;
-        color: #000000;
+    input:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
     }
 
-    .user-message {
-        background-color: #f8f9fa;
-        color: #000000;
+    [data-testid="stChatInput"] .stTextInput input {
+        border: 1px solid #ccc !important;
+        border-radius: 32px !important;
+        padding: 20px 28px !important;
+        font-size: 18px !important;
+        min-height: 60px !important;
+        background-color: #fff !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
 
-    .bot-message {
-        background-color: #ffffff;
-        color: #000000;
-    }
-
-    input, textarea, button {
-        background-color: #ffffff;
-        color: #000000;
-        border-color: #ccc;
-    }
-
-    .footer-container {
-        background-color: #ffffff;
-        color: #000000;
-    }
-
-    ::placeholder {
-        color: #999 !important;
-        opacity: 1 !important;
-    }
-
-    /* ---------------------------
-       Dark Theme (auto-detect)
-    --------------------------- */
-    @media (prefers-color-scheme: dark) {
-        html, body, .stApp {
-            background-color: #1e1e1e !important;
-            color: #ffffff !important;
-        }
-
-        .user-message {
-            background-color: #2c2c2c !important;
-            color: #ffffff !important;
-        }
-
-        .bot-message {
-            background-color: #3a3a3a !important;
-            color: #ffffff !important;
-        }
-
-        input, textarea, button {
-            background-color: #2a2a2a !important;
-            color: #ffffff !important;
-            border-color: #555555 !important;
-        }
-
-        ::placeholder {
-            color: #bbbbbb !important;
-            opacity: 1 !important;
-        }
-
-        .footer-container {
-            background-color: #1e1e1e !important;
-            color: #ffffff !important;
-        }
-
-        .stButton button[kind="secondary"],
-        .stButton button[kind="primary"] {
-            background-color: #444 !important;
-            color: #fff !important;
-        }
+    [data-testid="stChatInput"] .stTextInput input:focus {
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+        outline: none !important;
     }
     </style>
     """, unsafe_allow_html=True)
-
 
 
 
@@ -1368,14 +1282,17 @@ def load_responsive_css():
     /* ------------------------------
        Chat Input
     ------------------------------ */
-    [data-testid="stChatInput"] .stTextInput input {
-        border-radius: 32px !important;
-        padding: 20px 30px !important;
-        font-size: 1rem !important;
-        min-height: 60px !important;
-        border: 1px solid #ccc !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+      [data-testid="stChatInput"] .stTextInput input {
+    border-radius: 32px !important;
+    padding: 20px 30px !important;
+    
+    font-size: 1rem !important;
+    min-height: 60px !important;
+    background-color: #fff !important;
+    box-shadow: none !important;
+    outline: none !important;
     }
+
 
     @media (max-width: 480px) {
         [data-testid="stChatInput"] .stTextInput input {
@@ -1502,6 +1419,34 @@ def load_responsive_css():
         left: 50%;
         transform: translate(-50%, -50%);
     }
+  
+/* GLOBAL override to kill extra square border */
+input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+}
+
+/* Force override on stChatInput input again */
+[data-testid="stChatInput"] .stTextInput input {
+    border: 1px solid #ccc !important;
+    border-radius: 32px !important;
+    padding: 20px 28px !important;
+    font-size: 18px !important;
+    min-height: 60px !important;
+    background-color: #fff !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Focus override (when clicked) */
+[data-testid="stChatInput"] .stTextInput input:focus {
+    border: 1px solid #999 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+
     </style>
     """, unsafe_allow_html=True)
 
