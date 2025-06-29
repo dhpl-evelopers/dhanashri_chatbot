@@ -15,6 +15,9 @@ import base64
 from image_storage import ImageStorage
 image_storage = ImageStorage()
 
+if "sidebar_expanded" not in st.session_state:
+    st.session_state.sidebar_expanded = True
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +27,7 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .st-emotion-cache-1avcm0n {display: none !important;}  /* for newer Streamlit versions */
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -32,12 +35,10 @@ st.markdown("""
 st.set_page_config(
     page_title="RINGS & I - AI Ring Advisor",
     page_icon="💍",
-    layout="centered",
+    layout="wide",  # <--- changed from 'centered' to 'wide'
     initial_sidebar_state="expanded",
     menu_items=None
 )
-
-
 
 # Apply CSS fix to all input components
 st.markdown("""
@@ -672,55 +673,7 @@ def show_chat_ui():
         show_auth_ui()
         return
 
-st.markdown("""
-<style>
-#custom-sidebar-toggle {
-    position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 9999;
-    font-size: 24px;
-    background-color: white;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-</style>
-
-<div id="custom-sidebar-toggle">☰</div>
-
-<script>
-function waitForElement(selector, callback, maxTries = 10) {
-    let tries = 0;
-    const interval = setInterval(() => {
-        const el = document.querySelector(selector);
-        if (el) {
-            clearInterval(interval);
-            callback(el);
-        } else if (++tries >= maxTries) {
-            clearInterval(interval);
-            console.log("❌ Sidebar toggle not found.");
-        }
-    }, 500);
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const customToggle = document.getElementById("custom-sidebar-toggle");
-    if (customToggle) {
-        waitForElement('[data-testid="collapsedControl"]', function(sidebarToggle) {
-            customToggle.addEventListener("click", function () {
-                sidebarToggle.click();
-            });
-        });
-    }
-});
-</script>
-""", unsafe_allow_html=True)
-
-
-
+    
     # Sidebar content
     with st.sidebar:
         st.markdown("""
@@ -1217,6 +1170,26 @@ def load_css():
         box-shadow: none !important;
         outline: none !important;
     }
+                def load_css():
+    # ... (keep your existing CSS) ...
+
+   
+        /* Restore the collapse button */
+        [data-testid="collapsedControl"] {
+            display: flex !important;
+            left: 18px !important;
+            top: 18px !important;
+        }
+
+        /* Fix conflicting visibility rules */
+        #MainMenu {visibility: visible !important;}
+        header {visibility: visible !important;}
+
+        /* Ensure sidebar doesn't hide the button */
+        [data-testid="stSidebar"] > div:first-child {
+            padding-top: 2rem !important;
+        }
+   
     </style>
     """, unsafe_allow_html=True)
 
@@ -1341,11 +1314,7 @@ def load_responsive_css():
     /* ------------------------------
        Sidebar - Non-Scrollable Fit
     ------------------------------ */
-    section[data-testid="stSidebar"] {
-        height: auto !important;
-        overflow: hidden !important;
-    }
-
+   
     section[data-testid="stSidebar"] > div {
         display: flex !important;
         flex-direction: column !important;
@@ -1626,11 +1595,16 @@ def restore_user_id_from_url():
 
 
 def main():
-    handle_oauth_callback()  # Move this to be FIRST
+    handle_oauth_callback()
     restore_user_id_from_url()
     load_css()
     load_responsive_css()
+    
+    # ✅ Add this line to ensure the button appears
+    st.markdown("""<style>[data-testid="collapsedControl"] { display: block !important; }</style>""", unsafe_allow_html=True)
+    
     show_chat_ui()
+
 
 if __name__ == "__main__":
     main()
