@@ -674,50 +674,40 @@ def show_chat_ui():
 
     # Add persistent sidebar toggle button - FIXED VERSION
     st.markdown("""
-        <style>
-            #sidebarToggle {
-                position: fixed;
-                top: 14px;
-                left: 14px;
-                z-index: 10000;
-                font-size: 22px;
-                padding: 6px 12px;
-                background-color: white;
-                border-radius: 8px;
-                border: 1px solid #ddd;
-                cursor: pointer;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+<style>
+#custom-sidebar-toggle {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 9999;
+    font-size: 24px;
+    background-color: white;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+</style>
 
-            [data-testid="back_to_start"] button {
-                background-color: #1c1b18;
-                color: white;
-                font-size: 16px;
-                font-weight: 500;
-                border-radius: 10px;
-                padding: 10px 24px;
-            }
-        </style>
+<div id="custom-sidebar-toggle">☰</div>
 
-        <div id="sidebarToggle">☰</div>
+<script>
+setTimeout(() => {
+    const customToggle = window.document.getElementById("custom-sidebar-toggle");
+    const sidebarToggle = window.parent.document.querySelector('[data-testid="collapsedControl"]');
 
-        <script>
-            setTimeout(function() {
-                const toggleButton = document.getElementById("sidebarToggle");
-                toggleButton.addEventListener("click", function () {
-                    const sidebarToggle = window.document.querySelector('[data-testid="collapsedControl"]');
-                    if (sidebarToggle) {
-                        sidebarToggle.click();
-                    } else {
-                        console.log("Sidebar toggle button not found.");
-                    }
-                });
-            }, 1000);
-        </script>
-    """, unsafe_allow_html=True)
+    if (customToggle && sidebarToggle) {
+        customToggle.onclick = () => {
+            sidebarToggle.click();  // simulate native sidebar reopen
+        };
+    } else {
+        console.log("Sidebar toggle element not found");
+    }
+}, 1000);  // delay to ensure Streamlit renders the button
+</script>
+""", unsafe_allow_html=True)
+
 
     # Sidebar content
     with st.sidebar:
