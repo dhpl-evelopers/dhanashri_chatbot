@@ -672,8 +672,7 @@ def show_chat_ui():
         show_auth_ui()
         return
 
-    # Add persistent sidebar toggle button - FIXED VERSION
-    st.markdown("""
+st.markdown("""
 <style>
 #custom-sidebar-toggle {
     position: fixed;
@@ -693,20 +692,33 @@ def show_chat_ui():
 <div id="custom-sidebar-toggle">☰</div>
 
 <script>
-setTimeout(() => {
-    const customToggle = window.document.getElementById("custom-sidebar-toggle");
-    const sidebarToggle = window.document.querySelector('[data-testid="collapsedControl"]');
+function waitForElement(selector, callback, maxTries = 10) {
+    let tries = 0;
+    const interval = setInterval(() => {
+        const el = document.querySelector(selector);
+        if (el) {
+            clearInterval(interval);
+            callback(el);
+        } else if (++tries >= maxTries) {
+            clearInterval(interval);
+            console.log("❌ Sidebar toggle not found.");
+        }
+    }, 500);
+}
 
-    if (customToggle && sidebarToggle) {
-        customToggle.onclick = () => {
-            sidebarToggle.click();  // ✅ trigger native reopen
-        };
-    } else {
-        console.log("❌ Sidebar toggle element not found");
+document.addEventListener("DOMContentLoaded", function () {
+    const customToggle = document.getElementById("custom-sidebar-toggle");
+    if (customToggle) {
+        waitForElement('[data-testid="collapsedControl"]', function(sidebarToggle) {
+            customToggle.addEventListener("click", function () {
+                sidebarToggle.click();
+            });
+        });
     }
-}, 1000);
+});
 </script>
 """, unsafe_allow_html=True)
+
 
 
     # Sidebar content
