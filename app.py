@@ -11,6 +11,15 @@ from authlib.integrations.requests_client import OAuth2Session
 import logging
 import re
 import base64
+import threading
+
+def warm_up_bot():
+    try:
+        resp = requests.post(Config.CHAT_API_URL, json={"question": "ping"}, timeout=5)
+        print("✅ Warm-up complete:", resp.status_code)
+    except Exception as e:
+        print("⚠️ Warm-up failed:", e)
+
 
 from image_storage import ImageStorage
 image_storage = ImageStorage()
@@ -321,23 +330,57 @@ def handle_user_prompt(prompt, uploaded_files=None):
             img_html = f'<img src="data:{file.type};base64,{b64_image}" width="150"/>'
             st.session_state.messages.append({"role": "user", "content": img_html})
 
+    # ✅ Handle image generation prompts
+    if any(word in prompt.lower() for word in ["generate", "genarate", "create", "show", "give"]) and "image" in prompt.lower():
+        try:
+            with st.spinner("Generating ring image..."):
+                image_resp = requests.post(Config.IMAGE_API_URL, json={"prompt": prompt})
+                image_resp.raise_for_status()
+                image_url = image_resp.json().get("image_url")
+                if image_url:
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": f'<img src="{image_url}" width="300"/>'
+                    })
+                else:
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": "⚠️ Failed to generate image. No image returned."
+                    })
+        except Exception as e:
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": f"⚠️ Error generating image: {e}"
+            })
+        return  # Exit early, image already handled
+
     # ✅ Call chatbot backend with the user's prompt
     try:
         with st.spinner("Getting response..."):
-            resp = requests.post(Config.CHAT_API_URL, json={"question": prompt})
+            import time
+            start_time = time.time()
+            resp = requests.post(Config.CHAT_API_URL, json={"question": prompt}, timeout=15)
             resp.raise_for_status()
+            duration = time.time() - start_time
+            print(f"⏱️ Chat API responded in {duration:.2f} seconds")
+
             answer = resp.json().get("answer", "Sorry, I didn’t understand that.")
+
+        # Append bot reply
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+
+        # Save to storage
+        if st.session_state.logged_in:
+            storage.save_chat(st.session_state.user_id, st.session_state.messages)
+
+        st.session_state.uploaded_file_list.clear()
+
     except Exception as e:
-        answer = f"Error reaching AI backend: {e}"
+        st.session_state.messages.append({
+            "role": "assistant",
+            "content": f"⚠️ Error getting response: {e}"
+        })
 
-    # Append bot reply
-    st.session_state.messages.append({"role": "assistant", "content": answer})
-
-    # Save to storage
-    if st.session_state.logged_in:
-        storage.save_chat(st.session_state.user_id, st.session_state.messages)
-
-    st.session_state.uploaded_file_list.clear()
 
 
 
@@ -673,7 +716,6 @@ def show_chat_ui():
         show_auth_ui()
         return
 
-    
     # Sidebar content
     with st.sidebar:
         st.markdown("""
@@ -760,33 +802,45 @@ def show_chat_ui():
                 st.session_state.show_auth = True
                 st.rerun()
 
-    # ✅ Apply custom style to the existing Back button (outside the sidebar)
+    # ✅ Custom Back button CSS
     st.markdown("""
-        <style>
-            div.stButton > button[aria-label="Back"] {
-                position: fixed;
-                top: 20px;
-                left: 20px;
-                background-color: #1c1b18 !important;
-                color: white !important;
-                padding: 10px 28px !important;
-                font-size: 18px !important;
-                font-family: 'Georgia', serif !important;
-                font-weight: 400 !important;
-                border-radius: 14px !important;
-                border: none !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-                z-index: 1001;
-            }
+<style>
+/* Default (Desktop) */
+div.stButton > button[aria-label="Back"] {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #1c1b18 !important;
+    color: white !important;
+    padding: 10px 28px !important;
+    font-size: 18px !important;
+    font-family: 'Georgia', serif !important;
+    font-weight: 400 !important;
+    border-radius: 14px !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    z-index: 1001;
+}
 
-            div.stButton > button[aria-label="Back"]:hover {
-                background-color: #2e2d2a !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+/* On hover */
+div.stButton > button[aria-label="Back"]:hover {
+    background-color: #2e2d2a !important;
+}
 
+/* Responsive: Smaller padding and font for screens < 480px */
+@media only screen and (max-width: 480px) {
+    div.stButton > button[aria-label="Back"] {
+        top: 12px;
+        left: 12px;
+        padding: 6px 16px !important;
+        font-size: 14px !important;
+        border-radius: 10px !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
-    # ✅ Add BACK BUTTON after sidebar (outside the sidebar block)
+    # ✅ Add BACK BUTTON (outside the sidebar)
     if st.session_state.get("logged_in"):
         col1, col2 = st.columns([1, 8])
         with col1:
@@ -800,6 +854,7 @@ def show_chat_ui():
                 st.session_state.messages = []  # ✅ Clear previous chat messages
                 st.session_state.gold_result = None  # Optional: clear analysis result
                 st.rerun()
+
 
 
 
@@ -1597,14 +1652,17 @@ def restore_user_id_from_url():
 def main():
     handle_oauth_callback()
     restore_user_id_from_url()
+    
+    # 🔁 Warm up backend in background
+    threading.Thread(target=warm_up_bot).start()
+
     load_css()
     load_responsive_css()
-    
-    # ✅ Add this line to ensure the button appears
-    st.markdown("""<style>[data-testid="collapsedControl"] { display: block !important; }</style>""", unsafe_allow_html=True)
-    
-    show_chat_ui()
 
+    # ✅ Ensure sidebar toggle button appears
+    st.markdown("""<style>[data-testid="collapsedControl"] { display: block !important; }</style>""", unsafe_allow_html=True)
+
+    show_chat_ui()
 
 if __name__ == "__main__":
     main()
